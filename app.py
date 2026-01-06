@@ -176,10 +176,10 @@ game_html = """
         const overlayTitle = document.getElementById('overlayTitle');
         const overlayScore = document.getElementById('overlayScore');
 
-        // Game constants (tuned for comfortable gameplay)
-        const GRAVITY = 0.4;
-        const JUMP_STRENGTH = -11;
-        const PLAYER_SPEED = 3.5;
+        // Game constants (tuned for comfortable gameplay - 60% speed)
+        const GRAVITY = 0.35;
+        const JUMP_STRENGTH = -10;
+        const PLAYER_SPEED = 2.1;
         
         // World size (scrollable level)
         const WORLD_WIDTH = 3000;
