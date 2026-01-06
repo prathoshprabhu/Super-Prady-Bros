@@ -154,7 +154,7 @@ game_html = """
 </head>
 <body>
     <div id="gameContainer">
-        <canvas id="gameCanvas" width="900" height="500"></canvas>
+        <canvas id="gameCanvas" width="900" height="500" tabindex="1"></canvas>
         <div id="overlay">
             <h1 id="overlayTitle">🎉 YOU WIN! 🎉</h1>
             <p id="overlayScore">Coins: 0/10</p>
@@ -206,9 +206,11 @@ game_html = """
         };
 
         // Game state
-        let gameState = 'playing'; // 'playing', 'won', 'lost'
+        let gameState = 'title'; // 'title', 'playing', 'won', 'lost'
         let score = 0;
         let animationFrame = 0;
+        let playerName = '';
+        let nameInputActive = false;
 
         // Input state
         const keys = {
@@ -364,7 +366,7 @@ game_html = """
             { x: 850, y: 70, size: 28 },
         ];
 
-        // Initialize game
+        // Initialize game (called once at start)
         function initGame() {
             player.x = 50;
             player.y = 350;
@@ -373,8 +375,10 @@ game_html = """
             player.onGround = false;
             player.facingRight = true;
             score = 0;
-            gameState = 'playing';
-            cameraX = 0;  // Reset camera
+            gameState = 'title';  // Start at title screen
+            cameraX = 0;
+            playerName = '';
+            nameInputActive = false;
             initCoins();
             initEnemies();
             overlay.style.display = 'none';
@@ -472,6 +476,25 @@ game_html = """
         // Draw player
         function drawPlayer() {
             const { x, y, width, height, facingRight } = player;
+            
+            // Draw player name above character
+            if (playerName) {
+                ctx.save();
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                
+                // Name background
+                const nameWidth = ctx.measureText(playerName).width + 12;
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.beginPath();
+                ctx.roundRect(x + width/2 - nameWidth/2, y - 28, nameWidth, 20, 5);
+                ctx.fill();
+                
+                // Name text
+                ctx.fillStyle = '#FFD700';
+                ctx.fillText(playerName, x + width/2, y - 13);
+                ctx.restore();
+            }
             
             // Body (red overalls)
             ctx.fillStyle = COLORS.player;
@@ -867,7 +890,7 @@ game_html = """
         function gameOver() {
             gameState = 'lost';
             overlayTitle.textContent = '💀 GAME OVER 💀';
-            overlayScore.textContent = `Coins: ${score}/${coins.length}`;
+            overlayScore.textContent = `${playerName} collected ${score}/${coins.length} coins`;
             overlay.style.display = 'flex';
         }
 
@@ -875,7 +898,7 @@ game_html = """
         function gameWon() {
             gameState = 'won';
             overlayTitle.textContent = '🎉 YOU WIN! 🎉';
-            overlayScore.textContent = `Coins: ${score}/${coins.length}`;
+            overlayScore.textContent = `${playerName} collected ${score}/${coins.length} coins!`;
             overlay.style.display = 'flex';
         }
 
@@ -900,6 +923,12 @@ game_html = """
 
         // Draw game with camera offset
         function draw() {
+            // Show title screen
+            if (gameState === 'title') {
+                drawTitleScreen();
+                return;
+            }
+            
             drawSky();
             
             // Save context and apply camera transform
@@ -934,6 +963,164 @@ game_html = """
             drawProgressBar();
         }
         
+        // Draw title screen
+        function drawTitleScreen() {
+            // Animated background
+            const time = Date.now() / 1000;
+            
+            // Gradient sky
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(0.5, '#16213e');
+            gradient.addColorStop(1, '#0f3460');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Animated stars
+            ctx.fillStyle = '#FFF';
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 73 + time * 20) % canvas.width;
+                const y = (i * 37) % (canvas.height / 2);
+                const twinkle = Math.sin(time * 3 + i) * 0.5 + 0.5;
+                ctx.globalAlpha = twinkle;
+                ctx.beginPath();
+                ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            ctx.globalAlpha = 1;
+            
+            // Title with glow effect
+            ctx.shadowColor = '#FFD700';
+            ctx.shadowBlur = 30;
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 56px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🍄 SUPER PRADY BROS 🍄', canvas.width / 2, 120);
+            ctx.shadowBlur = 0;
+            
+            // Subtitle
+            ctx.fillStyle = '#87CEEB';
+            ctx.font = '24px Arial';
+            ctx.fillText('A Mario-Style Adventure', canvas.width / 2, 160);
+            
+            // Draw a preview character
+            const previewX = canvas.width / 2 - 20;
+            const previewY = 200 + Math.sin(time * 2) * 10;
+            drawPlayerAt(previewX, previewY, true);
+            
+            // Name input box
+            ctx.fillStyle = 'rgba(255,255,255,0.1)';
+            ctx.strokeStyle = nameInputActive ? '#FFD700' : '#87CEEB';
+            ctx.lineWidth = 3;
+            const boxX = canvas.width / 2 - 150;
+            const boxY = 300;
+            ctx.beginPath();
+            ctx.roundRect(boxX, boxY, 300, 50, 10);
+            ctx.fill();
+            ctx.stroke();
+            
+            // Label
+            ctx.fillStyle = '#FFF';
+            ctx.font = '18px Arial';
+            ctx.fillText('Enter Your Name:', canvas.width / 2, boxY - 15);
+            
+            // Name text or placeholder
+            ctx.font = 'bold 24px Arial';
+            if (playerName) {
+                ctx.fillStyle = '#FFD700';
+                ctx.fillText(playerName, canvas.width / 2, boxY + 33);
+            } else {
+                ctx.fillStyle = 'rgba(255,255,255,0.4)';
+                ctx.fillText('Click here to type...', canvas.width / 2, boxY + 33);
+            }
+            
+            // Cursor blink
+            if (nameInputActive && Math.floor(time * 2) % 2 === 0) {
+                const textWidth = ctx.measureText(playerName).width;
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(canvas.width / 2 + textWidth / 2 + 5, boxY + 12, 2, 26);
+            }
+            
+            // Start button
+            const canStart = playerName.length >= 1;
+            const btnY = 400;
+            const btnHover = Math.sin(time * 4) * 3;
+            
+            if (canStart) {
+                ctx.fillStyle = '#00FF7F';
+                ctx.shadowColor = '#00FF7F';
+                ctx.shadowBlur = 20;
+            } else {
+                ctx.fillStyle = '#555';
+                ctx.shadowBlur = 0;
+            }
+            
+            ctx.beginPath();
+            ctx.roundRect(canvas.width / 2 - 100, btnY + btnHover, 200, 50, 10);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = canStart ? '#000' : '#888';
+            ctx.font = 'bold 24px Arial';
+            ctx.fillText(canStart ? '▶ START GAME' : 'Enter name first', canvas.width / 2, btnY + 33 + btnHover);
+            
+            // Instructions
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.font = '16px Arial';
+            ctx.fillText('Press ENTER or click START to begin', canvas.width / 2, 480);
+            
+            ctx.textAlign = 'left';
+        }
+        
+        // Draw player at specific position (for title screen preview)
+        function drawPlayerAt(x, y, facingRight) {
+            // Body (red overalls)
+            ctx.fillStyle = COLORS.player;
+            ctx.fillRect(x + 4, y + 18, 28, 27);
+            
+            // Head
+            ctx.fillStyle = COLORS.playerFace;
+            ctx.beginPath();
+            ctx.ellipse(x + 18, y + 11, 11, 11, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Hat
+            ctx.fillStyle = COLORS.player;
+            ctx.fillRect(x + 4, y, 28, 9);
+            if (facingRight) {
+                ctx.fillRect(x + 24, y + 4, 10, 7);
+            } else {
+                ctx.fillRect(x + 2, y + 4, 10, 7);
+            }
+            
+            // Eye
+            const eyeX = facingRight ? x + 20 : x + 12;
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(eyeX, y + 11, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Mustache
+            ctx.fillStyle = '#654321';
+            ctx.beginPath();
+            ctx.ellipse(x + 18, y + 17, 9, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Legs
+            ctx.fillStyle = '#00008B';
+            ctx.fillRect(x + 7, y + 38, 9, 7);
+            ctx.fillRect(x + 20, y + 38, 9, 7);
+            
+            // Shoes
+            ctx.fillStyle = '#654321';
+            ctx.beginPath();
+            ctx.ellipse(x + 11, y + 43, 6, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + 25, y + 43, 6, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
         // Draw level progress bar
         function drawProgressBar() {
             const progress = player.x / WORLD_WIDTH;
@@ -973,12 +1160,36 @@ game_html = """
 
         // Keyboard input
         document.addEventListener('keydown', (e) => {
+            // Title screen input
+            if (gameState === 'title') {
+                if (nameInputActive) {
+                    if (e.key === 'Backspace') {
+                        playerName = playerName.slice(0, -1);
+                        e.preventDefault();
+                    } else if (e.key === 'Enter' && playerName.length >= 1) {
+                        startGame();
+                    } else if (e.key.length === 1 && playerName.length < 12) {
+                        // Only allow letters, numbers, and some symbols
+                        if (/^[a-zA-Z0-9_\- ]$/.test(e.key)) {
+                            playerName += e.key;
+                        }
+                    }
+                    e.preventDefault();
+                    return;
+                }
+                
+                if (e.key === 'Enter' && playerName.length >= 1) {
+                    startGame();
+                }
+                return;
+            }
+            
             if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') keys.jump = true;
             
-            if ((e.key === 'r' || e.key === 'R' || e.key === ' ') && gameState !== 'playing') {
-                initGame();
+            if ((e.key === 'r' || e.key === 'R') && (gameState === 'won' || gameState === 'lost')) {
+                resetGame();
             }
             
             // Prevent scrolling
@@ -992,6 +1203,29 @@ game_html = """
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') keys.jump = false;
         });
+        
+        // Start game from title screen
+        function startGame() {
+            gameState = 'playing';
+            nameInputActive = false;
+            resetGame();
+        }
+        
+        // Reset game (keep the player name)
+        function resetGame() {
+            player.x = 50;
+            player.y = 350;
+            player.velX = 0;
+            player.velY = 0;
+            player.onGround = false;
+            player.facingRight = true;
+            score = 0;
+            gameState = 'playing';
+            cameraX = 0;
+            initCoins();
+            initEnemies();
+            overlay.style.display = 'none';
+        }
 
         // Mobile controls
         const btnLeft = document.getElementById('btnLeft');
@@ -1005,8 +1239,29 @@ game_html = """
         btnJump.addEventListener('touchstart', (e) => { e.preventDefault(); keys.jump = true; });
         btnJump.addEventListener('touchend', (e) => { e.preventDefault(); keys.jump = false; });
 
-        // Click to focus (for keyboard input)
-        canvas.addEventListener('click', () => {
+        // Click handler for title screen and focus
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            if (gameState === 'title') {
+                // Check if clicked on name input box
+                const boxX = canvas.width / 2 - 150;
+                const boxY = 300;
+                if (clickX >= boxX && clickX <= boxX + 300 && clickY >= boxY && clickY <= boxY + 50) {
+                    nameInputActive = true;
+                } else {
+                    nameInputActive = false;
+                }
+                
+                // Check if clicked on start button
+                const btnY = 400;
+                if (playerName.length >= 1 && clickX >= canvas.width / 2 - 100 && clickX <= canvas.width / 2 + 100 && clickY >= btnY && clickY <= btnY + 50) {
+                    startGame();
+                }
+            }
+            
             canvas.focus();
         });
 
