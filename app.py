@@ -158,7 +158,7 @@ game_html = """
         <div id="overlay">
             <h1 id="overlayTitle">🎉 YOU WIN! 🎉</h1>
             <p id="overlayScore">Coins: 0/10</p>
-            <p class="restart-hint">Press SPACE or R to play again</p>
+            <p class="restart-hint">Press R to choose character & play again</p>
         </div>
         <div class="mobile-controls">
             <div style="display: flex; gap: 10px;">
@@ -206,11 +206,123 @@ game_html = """
         };
 
         // Game state
-        let gameState = 'title'; // 'title', 'playing', 'won', 'lost'
+        let gameState = 'title'; // 'title', 'character', 'playing', 'won', 'lost'
         let score = 0;
         let animationFrame = 0;
         let playerName = '';
         let nameInputActive = false;
+        let selectedCharacter = 0;
+        
+        // Available characters - each with unique features
+        const characters = [
+            { 
+                name: 'Mario', 
+                color: '#DC143C', 
+                hatColor: '#DC143C',
+                shirtColor: '#DC143C',
+                pantsColor: '#00008B',
+                description: 'The classic hero!',
+                gender: 'male',
+                skinTone: '#FFDAB9',
+                eyeColor: '#4169E1',
+                hairColor: '#5D4037',
+                hasHat: true,
+                hasMustache: true,
+                hairStyle: 'none'
+            },
+            { 
+                name: 'Luigi', 
+                color: '#228B22', 
+                hatColor: '#228B22',
+                shirtColor: '#228B22',
+                pantsColor: '#00008B',
+                description: 'Tall & brave!',
+                gender: 'male',
+                skinTone: '#FFDAB9',
+                eyeColor: '#228B22',
+                hairColor: '#5D4037',
+                hasHat: true,
+                hasMustache: true,
+                hairStyle: 'none'
+            },
+            { 
+                name: 'Peach', 
+                color: '#FFB6C1', 
+                hatColor: '#FFD700',
+                shirtColor: '#FFB6C1',
+                pantsColor: '#FF69B4',
+                description: 'Royal & graceful!',
+                gender: 'female',
+                skinTone: '#FFE4C4',
+                eyeColor: '#4169E1',
+                hairColor: '#FFD700',
+                hasHat: false,
+                hasMustache: false,
+                hairStyle: 'long',
+                hasCrown: true
+            },
+            { 
+                name: 'Prady', 
+                color: '#FFD700', 
+                hatColor: '#FFD700',
+                shirtColor: '#FF8C00',
+                pantsColor: '#8B4513',
+                description: 'The golden champion!',
+                gender: 'male',
+                skinTone: '#D2691E',
+                eyeColor: '#8B4513',
+                hairColor: '#1a1a1a',
+                hasHat: true,
+                hasMustache: false,
+                hairStyle: 'short'
+            },
+            { 
+                name: 'Rosa', 
+                color: '#00CED1', 
+                hatColor: '#00CED1',
+                shirtColor: '#40E0D0',
+                pantsColor: '#008B8B',
+                description: 'Swift & clever!',
+                gender: 'female',
+                skinTone: '#8B5A2B',
+                eyeColor: '#00CED1',
+                hairColor: '#1a1a1a',
+                hasHat: false,
+                hasMustache: false,
+                hairStyle: 'curly'
+            },
+            { 
+                name: 'Shadow', 
+                color: '#4B0082', 
+                hatColor: '#4B0082',
+                shirtColor: '#2F0052',
+                pantsColor: '#1a1a2e',
+                description: 'Dark & mysterious!',
+                gender: 'male',
+                skinTone: '#C9A86C',
+                eyeColor: '#9400D3',
+                hairColor: '#1a1a1a',
+                hasHat: true,
+                hasMustache: false,
+                hairStyle: 'spiky'
+            },
+            { 
+                name: 'Daisy', 
+                color: '#FFA500', 
+                hatColor: '#FFA500',
+                shirtColor: '#FFD700',
+                pantsColor: '#FF8C00',
+                description: 'Sporty & fun!',
+                gender: 'female',
+                skinTone: '#FFDAB9',
+                eyeColor: '#228B22',
+                hairColor: '#8B4513',
+                hasHat: false,
+                hasMustache: false,
+                hairStyle: 'ponytail',
+                hasCrown: true
+            }
+        ];
 
         // Input state
         const keys = {
@@ -318,34 +430,51 @@ game_html = """
             ];
         }
 
-        // Enemies - More scary red monsters across the level
+        // Enemies - Red demons and green Koopa turtles
         let enemies = [];
+        let turtles = [];
+        
         function initEnemies() {
+            // Red demon monsters
             enemies = [
                 // Section 1
                 { x: 100, y: 412, width: 38, height: 38, patrolLeft: 50, patrolRight: 350, direction: 1, animFrame: 0 },
-                { x: 280, y: 412, width: 38, height: 38, patrolLeft: 50, patrolRight: 350, direction: -1, animFrame: 0 },
                 // Section 2
                 { x: 550, y: 412, width: 38, height: 38, patrolLeft: 500, patrolRight: 680, direction: 1, animFrame: 0 },
                 // Section 3
                 { x: 850, y: 412, width: 38, height: 38, patrolLeft: 800, patrolRight: 930, direction: 1, animFrame: 0 },
-                { x: 910, y: 242, width: 38, height: 38, patrolLeft: 880, patrolRight: 960, direction: -1, animFrame: 0 },
                 // Section 4
                 { x: 1100, y: 412, width: 38, height: 38, patrolLeft: 1050, patrolRight: 1280, direction: 1, animFrame: 0 },
-                { x: 1200, y: 412, width: 38, height: 38, patrolLeft: 1050, patrolRight: 1280, direction: -1, animFrame: 0 },
                 // Section 5
                 { x: 1420, y: 412, width: 38, height: 38, patrolLeft: 1400, patrolRight: 1500, direction: 1, animFrame: 0 },
                 // Section 6
                 { x: 1750, y: 412, width: 38, height: 38, patrolLeft: 1700, patrolRight: 1880, direction: 1, animFrame: 0 },
-                { x: 1780, y: 312, width: 38, height: 38, patrolLeft: 1750, patrolRight: 1830, direction: -1, animFrame: 0 },
                 // Section 7
                 { x: 2050, y: 412, width: 38, height: 38, patrolLeft: 2000, patrolRight: 2130, direction: 1, animFrame: 0 },
-                // Section 8
-                { x: 2350, y: 412, width: 38, height: 38, patrolLeft: 2300, patrolRight: 2480, direction: 1, animFrame: 0 },
-                { x: 2450, y: 412, width: 38, height: 38, patrolLeft: 2300, patrolRight: 2480, direction: -1, animFrame: 0 },
-                // Final area - guardians
+                // Final area
                 { x: 2700, y: 412, width: 38, height: 38, patrolLeft: 2650, patrolRight: 2850, direction: 1, animFrame: 0 },
-                { x: 2800, y: 412, width: 38, height: 38, patrolLeft: 2650, patrolRight: 2950, direction: -1, animFrame: 0 },
+            ];
+            
+            // Green Koopa turtles
+            turtles = [
+                // Section 1
+                { x: 280, y: 410, width: 40, height: 40, patrolLeft: 50, patrolRight: 350, direction: -1, animFrame: 0, inShell: false },
+                // Section 2
+                { x: 620, y: 410, width: 40, height: 40, patrolLeft: 500, patrolRight: 680, direction: -1, animFrame: 0, inShell: false },
+                // Section 3
+                { x: 910, y: 240, width: 40, height: 40, patrolLeft: 880, patrolRight: 960, direction: -1, animFrame: 0, inShell: false },
+                // Section 4
+                { x: 1200, y: 410, width: 40, height: 40, patrolLeft: 1050, patrolRight: 1280, direction: -1, animFrame: 0, inShell: false },
+                // Section 5
+                { x: 1630, y: 282, width: 40, height: 40, patrolLeft: 1600, patrolRight: 1680, direction: 1, animFrame: 0, inShell: false },
+                // Section 6
+                { x: 1880, y: 240, width: 40, height: 40, patrolLeft: 1850, patrolRight: 1930, direction: -1, animFrame: 0, inShell: false },
+                // Section 7
+                { x: 2210, y: 360, width: 40, height: 40, patrolLeft: 2180, patrolRight: 2260, direction: 1, animFrame: 0, inShell: false },
+                // Section 8
+                { x: 2400, y: 410, width: 40, height: 40, patrolLeft: 2300, patrolRight: 2480, direction: -1, animFrame: 0, inShell: false },
+                // Final area
+                { x: 2800, y: 410, width: 40, height: 40, patrolLeft: 2650, patrolRight: 2950, direction: -1, animFrame: 0, inShell: false },
             ];
         }
 
@@ -473,74 +602,342 @@ game_html = """
             }
         }
 
-        // Draw player
+        // Draw player with enhanced graphics and unique character features
         function drawPlayer() {
             const { x, y, width, height, facingRight } = player;
+            const char = characters[selectedCharacter];
+            const isFemale = char.gender === 'female';
+            const skinTone = char.skinTone || '#FFDAB9';
+            const skinDark = shadeColor(skinTone, -20);
+            const hairColor = char.hairColor || '#5D4037';
+            const eyeColor = char.eyeColor || '#4169E1';
             
             // Draw player name above character
             if (playerName) {
                 ctx.save();
                 ctx.font = 'bold 14px Arial';
                 ctx.textAlign = 'center';
+                const nameWidth = ctx.measureText(playerName).width + 16;
                 
-                // Name background
-                const nameWidth = ctx.measureText(playerName).width + 12;
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
                 ctx.beginPath();
-                ctx.roundRect(x + width/2 - nameWidth/2, y - 28, nameWidth, 20, 5);
+                ctx.roundRect(x + width/2 - nameWidth/2 + 2, y - 32, nameWidth, 20, 5);
                 ctx.fill();
                 
-                // Name text
+                const nameBg = ctx.createLinearGradient(0, y - 34, 0, y - 14);
+                nameBg.addColorStop(0, 'rgba(0,0,0,0.8)');
+                nameBg.addColorStop(1, 'rgba(30,30,30,0.9)');
+                ctx.fillStyle = nameBg;
+                ctx.beginPath();
+                ctx.roundRect(x + width/2 - nameWidth/2, y - 34, nameWidth, 20, 5);
+                ctx.fill();
+                ctx.strokeStyle = char.color;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                ctx.shadowColor = char.color;
+                ctx.shadowBlur = 8;
                 ctx.fillStyle = '#FFD700';
-                ctx.fillText(playerName, x + width/2, y - 13);
+                ctx.fillText(playerName, x + width/2, y - 19);
+                ctx.shadowBlur = 0;
                 ctx.restore();
             }
             
-            // Body (red overalls)
-            ctx.fillStyle = COLORS.player;
-            ctx.fillRect(x + 4, y + 18, 28, 27);
-            
-            // Head
-            ctx.fillStyle = COLORS.playerFace;
+            // Shadow on ground
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
             ctx.beginPath();
-            ctx.ellipse(x + width/2, y + 11, 11, 11, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + width/2, y + height + 2, 16, 5, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Hat
-            ctx.fillStyle = COLORS.player;
-            ctx.fillRect(x + 4, y, 28, 9);
-            if (facingRight) {
-                ctx.fillRect(x + 24, y + 4, 10, 7);
-            } else {
-                ctx.fillRect(x + 2, y + 4, 10, 7);
+            // Hair behind head for long styles
+            if (char.hairStyle === 'long') {
+                ctx.fillStyle = hairColor;
+                ctx.beginPath();
+                ctx.ellipse(x + width/2, y + 15, 16, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+                const hairSide = facingRight ? x - 2 : x + width + 2;
+                ctx.beginPath();
+                ctx.moveTo(hairSide, y + 10);
+                ctx.quadraticCurveTo(hairSide + (facingRight ? -5 : 5), y + 35, hairSide + (facingRight ? 3 : -3), y + 45);
+                ctx.quadraticCurveTo(hairSide + (facingRight ? 6 : -6), y + 35, hairSide + (facingRight ? 4 : -4), y + 15);
+                ctx.fill();
+            } else if (char.hairStyle === 'curly') {
+                ctx.fillStyle = hairColor;
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const hx = x + width/2 + Math.cos(angle) * 14;
+                    const hy = y + 8 + Math.sin(angle) * 12;
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
             }
             
-            // Eye
-            const eyeX = facingRight ? x + 20 : x + 12;
+            // Body
+            const bodyGrad = ctx.createLinearGradient(x + 4, y + 18, x + 32, y + 45);
+            bodyGrad.addColorStop(0, char.shirtColor);
+            bodyGrad.addColorStop(0.5, shadeColor(char.shirtColor, -15));
+            bodyGrad.addColorStop(1, shadeColor(char.shirtColor, -30));
+            ctx.fillStyle = bodyGrad;
+            
+            if (isFemale) {
+                ctx.beginPath();
+                ctx.moveTo(x + 8, y + 18);
+                ctx.lineTo(x + 28, y + 18);
+                ctx.lineTo(x + 32, y + 42);
+                ctx.lineTo(x + 4, y + 42);
+                ctx.closePath();
+                ctx.fill();
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    ctx.arc(x + 6 + i * 6, y + 42, 4, 0, Math.PI);
+                }
+                ctx.fill();
+            } else {
+                ctx.beginPath();
+                ctx.roundRect(x + 5, y + 18, 26, 25, 4);
+                ctx.fill();
+                ctx.fillStyle = char.pantsColor;
+                ctx.fillRect(x + 8, y + 18, 4, 10);
+                ctx.fillRect(x + 24, y + 18, 4, 10);
+                ctx.fillStyle = shadeColor(char.pantsColor, -20);
+                ctx.fillRect(x + 5, y + 38, 26, 4);
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.roundRect(x + 14, y + 38, 8, 4, 1);
+                ctx.fill();
+            }
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.beginPath();
+            ctx.roundRect(x + 6, y + 19, 8, 12, 2);
+            ctx.fill();
+            
+            // Head
+            const headGrad = ctx.createRadialGradient(x + width/2 - 3, y + 8, 0, x + width/2, y + 11, 13);
+            headGrad.addColorStop(0, shadeColor(skinTone, 10));
+            headGrad.addColorStop(0.7, skinTone);
+            headGrad.addColorStop(1, skinDark);
+            ctx.fillStyle = headGrad;
+            ctx.beginPath();
+            ctx.ellipse(x + width/2, y + 11, 12, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Blush
+            if (isFemale) {
+                ctx.fillStyle = 'rgba(255,150,150,0.4)';
+                ctx.beginPath();
+                ctx.ellipse(x + 8, y + 14, 4, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(x + 28, y + 14, 4, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Ear
+            const earX = facingRight ? x + 5 : x + 31;
+            ctx.fillStyle = skinTone;
+            ctx.beginPath();
+            ctx.ellipse(earX, y + 12, 3, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Hat or Hair
+            if (char.hasHat) {
+                const hatGrad = ctx.createLinearGradient(x + 4, y, x + 32, y + 12);
+                hatGrad.addColorStop(0, shadeColor(char.hatColor, 20));
+                hatGrad.addColorStop(0.5, char.hatColor);
+                hatGrad.addColorStop(1, shadeColor(char.hatColor, -25));
+                ctx.fillStyle = hatGrad;
+                ctx.beginPath();
+                ctx.roundRect(x + 4, y - 2, 28, 12, 3);
+                ctx.fill();
+                if (facingRight) {
+                    ctx.beginPath();
+                    ctx.roundRect(x + 22, y + 4, 14, 8, 2);
+                    ctx.fill();
+                } else {
+                    ctx.beginPath();
+                    ctx.roundRect(x, y + 4, 14, 8, 2);
+                    ctx.fill();
+                }
+                ctx.fillStyle = '#FFF';
+                ctx.beginPath();
+                ctx.arc(x + width/2, y + 4, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = char.hatColor;
+                ctx.font = 'bold 7px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(char.name[0], x + width/2, y + 7);
+                ctx.textAlign = 'left';
+            } else if (char.hairStyle === 'short') {
+                ctx.fillStyle = hairColor;
+                ctx.beginPath();
+                ctx.ellipse(x + width/2, y + 2, 10, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (char.hairStyle === 'spiky') {
+                ctx.fillStyle = hairColor;
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + 8 + i * 5, y + 5);
+                    ctx.lineTo(x + 10 + i * 5, y - 6);
+                    ctx.lineTo(x + 12 + i * 5, y + 5);
+                    ctx.fill();
+                }
+            } else if (char.hairStyle === 'ponytail') {
+                ctx.fillStyle = hairColor;
+                ctx.beginPath();
+                ctx.ellipse(x + width/2, y + 2, 12, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                const tailX = facingRight ? x + 30 : x + 6;
+                ctx.beginPath();
+                ctx.moveTo(tailX, y);
+                ctx.quadraticCurveTo(tailX + (facingRight ? 10 : -10), y + 5, tailX + (facingRight ? 8 : -8), y + 25);
+                ctx.quadraticCurveTo(tailX + (facingRight ? 5 : -5), y + 20, tailX + (facingRight ? 2 : -2), y + 5);
+                ctx.fill();
+            }
+            
+            // Crown
+            if (char.hasCrown) {
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.moveTo(x + 8, y - 5);
+                ctx.lineTo(x + 10, y - 15);
+                ctx.lineTo(x + 14, y - 8);
+                ctx.lineTo(x + 18, y - 18);
+                ctx.lineTo(x + 22, y - 8);
+                ctx.lineTo(x + 26, y - 15);
+                ctx.lineTo(x + 28, y - 5);
+                ctx.closePath();
+                ctx.fill();
+                ctx.fillStyle = '#FF1493';
+                ctx.beginPath();
+                ctx.arc(x + 18, y - 12, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Eyes
+            const eyeX = facingRight ? x + 21 : x + 13;
+            const eyeSize = isFemale ? 5 : 4;
+            ctx.fillStyle = '#FFF';
+            ctx.beginPath();
+            ctx.ellipse(eyeX, y + 10, eyeSize, eyeSize + 1, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = eyeColor;
+            ctx.beginPath();
+            ctx.arc(eyeX + (facingRight ? 1 : -1), y + 10, 2.5, 0, Math.PI * 2);
+            ctx.fill();
             ctx.fillStyle = '#000';
             ctx.beginPath();
-            ctx.arc(eyeX, y + 11, 2.5, 0, Math.PI * 2);
+            ctx.arc(eyeX + (facingRight ? 1 : -1), y + 10, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#FFF';
+            ctx.beginPath();
+            ctx.arc(eyeX + (facingRight ? 2 : 0), y + 9, 0.8, 0, Math.PI * 2);
             ctx.fill();
             
-            // Mustache
-            ctx.fillStyle = '#654321';
+            // Eyelashes
+            if (isFemale) {
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(eyeX - 3, y + 6);
+                ctx.lineTo(eyeX - 4, y + 4);
+                ctx.moveTo(eyeX, y + 5);
+                ctx.lineTo(eyeX, y + 3);
+                ctx.stroke();
+            }
+            
+            // Eyebrow
+            ctx.strokeStyle = hairColor;
+            ctx.lineWidth = isFemale ? 1.5 : 2;
             ctx.beginPath();
-            ctx.ellipse(x + width/2, y + 17, 9, 3, 0, 0, Math.PI * 2);
+            ctx.moveTo(eyeX - 4, y + 4);
+            ctx.quadraticCurveTo(eyeX, y + 2, eyeX + 4, y + 4);
+            ctx.stroke();
+            ctx.lineWidth = 1;
+            
+            // Nose
+            ctx.fillStyle = skinDark;
+            ctx.beginPath();
+            ctx.ellipse(x + width/2 + (facingRight ? 3 : -3), y + 13, isFemale ? 2 : 3, 2, 0, 0, Math.PI * 2);
             ctx.fill();
+            
+            // Smile! 😊
+            ctx.strokeStyle = '#C0392B';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x + width/2, y + 14, 5, 0.2, Math.PI - 0.2);
+            ctx.stroke();
+            ctx.lineWidth = 1;
+            
+            // Mustache or Lipstick
+            if (char.hasMustache) {
+                const mustacheGrad = ctx.createLinearGradient(x + 9, y + 15, x + 27, y + 20);
+                mustacheGrad.addColorStop(0, hairColor);
+                mustacheGrad.addColorStop(1, shadeColor(hairColor, -30));
+                ctx.fillStyle = mustacheGrad;
+                ctx.beginPath();
+                ctx.moveTo(x + width/2, y + 16);
+                ctx.quadraticCurveTo(x + 8, y + 17, x + 6, y + 21);
+                ctx.quadraticCurveTo(x + 10, y + 19, x + width/2, y + 18);
+                ctx.quadraticCurveTo(x + 26, y + 19, x + 30, y + 21);
+                ctx.quadraticCurveTo(x + 28, y + 17, x + width/2, y + 16);
+                ctx.fill();
+            }
+            if (isFemale) {
+                ctx.fillStyle = '#E74C3C';
+                ctx.beginPath();
+                ctx.ellipse(x + width/2, y + 18, 4, 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
             
             // Legs
-            ctx.fillStyle = '#00008B';
-            ctx.fillRect(x + 7, y + 38, 9, 7);
-            ctx.fillRect(x + 20, y + 38, 9, 7);
+            const legGrad = ctx.createLinearGradient(x + 7, y + 42, x + 16, y + 48);
+            legGrad.addColorStop(0, isFemale ? skinTone : char.pantsColor);
+            legGrad.addColorStop(1, isFemale ? skinDark : shadeColor(char.pantsColor, -30));
+            ctx.fillStyle = legGrad;
+            ctx.beginPath();
+            ctx.roundRect(x + 7, y + 44, 10, 8, 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.roundRect(x + 19, y + 44, 10, 8, 2);
+            ctx.fill();
             
             // Shoes
-            ctx.fillStyle = '#654321';
+            const shoeColor = isFemale ? char.color : '#8B4513';
+            const shoeGrad = ctx.createRadialGradient(x + 10, y + 50, 0, x + 12, y + 52, 10);
+            shoeGrad.addColorStop(0, shadeColor(shoeColor, 20));
+            shoeGrad.addColorStop(0.6, shoeColor);
+            shoeGrad.addColorStop(1, shadeColor(shoeColor, -30));
+            ctx.fillStyle = shoeGrad;
             ctx.beginPath();
-            ctx.ellipse(x + 11, y + 43, 6, 4, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 11, y + 52, 8, 5, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.ellipse(x + 25, y + 43, 6, 4, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 25, y + 52, 8, 5, 0, 0, Math.PI * 2);
             ctx.fill();
+            
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(x + 9, y + 50, 3, 2, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            if (isFemale) {
+                ctx.fillStyle = shadeColor(shoeColor, -30);
+                ctx.fillRect(x + 8, y + 52, 3, 5);
+                ctx.fillRect(x + 22, y + 52, 3, 5);
+            }
+        }
+        
+        // Helper function to shade colors
+        function shadeColor(color, percent) {
+            if (!color) return '#888888';
+            const num = parseInt(color.replace('#', ''), 16);
+            const amt = Math.round(2.55 * percent);
+            const R = Math.max(0, Math.min(255, (num >> 16) + amt));
+            const G = Math.max(0, Math.min(255, (num >> 8 & 0x00FF) + amt));
+            const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt));
+            return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
         }
 
         // Draw coin
@@ -696,6 +1093,120 @@ game_html = """
             }
         }
 
+        // Draw Koopa turtle enemy
+        function drawTurtle(turtle) {
+            const { x, y, width, height, direction, animFrame, inShell } = turtle;
+            const bounce = Math.sin(Date.now() / 200) * 2;
+            
+            if (inShell) {
+                // Draw shell only (when hiding)
+                const shellGrad = ctx.createRadialGradient(x + width/2, y + height/2, 0, x + width/2, y + height/2, width/2);
+                shellGrad.addColorStop(0, '#32CD32');
+                shellGrad.addColorStop(0.7, '#228B22');
+                shellGrad.addColorStop(1, '#006400');
+                ctx.fillStyle = shellGrad;
+                ctx.beginPath();
+                ctx.ellipse(x + width/2, y + height/2 + 5, width/2, height/2.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Shell pattern
+                ctx.strokeStyle = '#004400';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x + width/2, y + 5);
+                ctx.lineTo(x + width/2, y + height - 5);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 8, y + height/2);
+                ctx.lineTo(x + width - 8, y + height/2);
+                ctx.stroke();
+                return;
+            }
+            
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(x + width/2, y + height + 2, width/2.5, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Shell (back)
+            const shellGrad = ctx.createRadialGradient(x + width/2, y + height/2 + 5, 0, x + width/2, y + height/2, width/2);
+            shellGrad.addColorStop(0, '#32CD32');
+            shellGrad.addColorStop(0.6, '#228B22');
+            shellGrad.addColorStop(1, '#006400');
+            ctx.fillStyle = shellGrad;
+            ctx.beginPath();
+            ctx.ellipse(x + width/2, y + height/2 + 5 + bounce/2, width/2 + 2, height/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Shell pattern
+            ctx.strokeStyle = '#004400';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(x + width/2, y + height/2 + 5 + bounce/2, width/3, height/3, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // Head
+            const headX = direction > 0 ? x + width - 5 : x - 5;
+            ctx.fillStyle = '#FFDB58';
+            ctx.beginPath();
+            ctx.ellipse(headX, y + 12 + bounce, 12, 10, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Snout/beak
+            ctx.fillStyle = '#F0C040';
+            const beakX = direction > 0 ? headX + 8 : headX - 8;
+            ctx.beginPath();
+            ctx.ellipse(beakX, y + 15 + bounce, 6, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyes
+            const eyeX = direction > 0 ? headX + 2 : headX - 2;
+            ctx.fillStyle = '#FFF';
+            ctx.beginPath();
+            ctx.arc(eyeX, y + 10 + bounce, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(eyeX + (direction > 0 ? 1 : -1), y + 10 + bounce, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyebrow (angry look)
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            if (direction > 0) {
+                ctx.moveTo(eyeX - 4, y + 5 + bounce);
+                ctx.lineTo(eyeX + 4, y + 7 + bounce);
+            } else {
+                ctx.moveTo(eyeX + 4, y + 5 + bounce);
+                ctx.lineTo(eyeX - 4, y + 7 + bounce);
+            }
+            ctx.stroke();
+            
+            // Feet
+            const footOffset = Math.floor(Date.now() / 150) % 2 === 0 ? 3 : -3;
+            ctx.fillStyle = '#FF8C00';
+            // Front foot
+            ctx.beginPath();
+            ctx.ellipse(direction > 0 ? x + width - 8 : x + 8, y + height - 3 + footOffset, 7, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            // Back foot
+            ctx.beginPath();
+            ctx.ellipse(direction > 0 ? x + 12 : x + width - 12, y + height - 3 - footOffset, 7, 5, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Tail
+            ctx.fillStyle = '#FFDB58';
+            ctx.beginPath();
+            const tailX = direction > 0 ? x + 5 : x + width - 5;
+            ctx.moveTo(tailX, y + height/2 + bounce);
+            ctx.lineTo(tailX + (direction > 0 ? -12 : 12), y + height/2 + 8 + bounce);
+            ctx.lineTo(tailX + (direction > 0 ? -8 : 8), y + height/2 - 3 + bounce);
+            ctx.closePath();
+            ctx.fill();
+        }
+        
         // Draw flag
         function drawFlag() {
             const { x, y, poleHeight, animTimer } = flag;
@@ -876,6 +1387,22 @@ game_html = """
                     gameOver();
                 }
             });
+            
+            // Update turtles
+            turtles.forEach(turtle => {
+                if (!turtle.inShell) {
+                    turtle.x += 0.6 * turtle.direction;  // Turtles move slower
+                    
+                    if (turtle.x <= turtle.patrolLeft) turtle.direction = 1;
+                    if (turtle.x >= turtle.patrolRight) turtle.direction = -1;
+                }
+                
+                turtle.animFrame = Math.floor(Date.now() / 200) % 2;
+                
+                if (checkCollision(player, turtle)) {
+                    gameOver();
+                }
+            });
         }
 
         // Check flag
@@ -929,6 +1456,12 @@ game_html = """
                 return;
             }
             
+            // Show character selection
+            if (gameState === 'character') {
+                drawCharacterSelect();
+                return;
+            }
+            
             drawSky();
             
             // Save context and apply camera transform
@@ -951,6 +1484,7 @@ game_html = """
             platforms.forEach(drawPlatform);
             coins.forEach(drawCoin);
             enemies.forEach(drawEnemy);
+            turtles.forEach(drawTurtle);
             drawFlag();
             drawPlayer();
             
@@ -1045,6 +1579,8 @@ game_html = """
             const canStart = playerName.length >= 1;
             const btnY = 400;
             const btnHover = Math.sin(time * 4) * 3;
+            const btnText = canStart ? '▶ CHOOSE CHARACTER' : 'Enter name first';
+            const btnWidth = Math.max(280, ctx.measureText(btnText).width + 60);
             
             if (canStart) {
                 ctx.fillStyle = '#00FF7F';
@@ -1056,13 +1592,13 @@ game_html = """
             }
             
             ctx.beginPath();
-            ctx.roundRect(canvas.width / 2 - 100, btnY + btnHover, 200, 50, 10);
+            ctx.roundRect(canvas.width / 2 - btnWidth / 2, btnY + btnHover, btnWidth, 50, 10);
             ctx.fill();
             ctx.shadowBlur = 0;
             
             ctx.fillStyle = canStart ? '#000' : '#888';
-            ctx.font = 'bold 24px Arial';
-            ctx.fillText(canStart ? '▶ START GAME' : 'Enter name first', canvas.width / 2, btnY + 33 + btnHover);
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText(btnText, canvas.width / 2, btnY + 33 + btnHover);
             
             // Instructions
             ctx.fillStyle = 'rgba(255,255,255,0.6)';
@@ -1072,53 +1608,503 @@ game_html = """
             ctx.textAlign = 'left';
         }
         
-        // Draw player at specific position (for title screen preview)
-        function drawPlayerAt(x, y, facingRight) {
-            // Body (red overalls)
-            ctx.fillStyle = COLORS.player;
-            ctx.fillRect(x + 4, y + 18, 28, 27);
+        // Draw character selection screen - Carousel style
+        function drawCharacterSelect() {
+            const time = Date.now() / 1000;
             
-            // Head
-            ctx.fillStyle = COLORS.playerFace;
-            ctx.beginPath();
-            ctx.ellipse(x + 18, y + 11, 11, 11, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // Gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#1a1a2e');
+            gradient.addColorStop(0.5, '#16213e');
+            gradient.addColorStop(1, '#0f3460');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Hat
-            ctx.fillStyle = COLORS.player;
-            ctx.fillRect(x + 4, y, 28, 9);
-            if (facingRight) {
-                ctx.fillRect(x + 24, y + 4, 10, 7);
-            } else {
-                ctx.fillRect(x + 2, y + 4, 10, 7);
+            // Title
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 42px Arial';
+            ctx.textAlign = 'center';
+            ctx.shadowColor = '#FFD700';
+            ctx.shadowBlur = 20;
+            ctx.fillText('CHOOSE YOUR HERO', canvas.width / 2, 55);
+            ctx.shadowBlur = 0;
+            
+            // Player name display
+            ctx.fillStyle = '#87CEEB';
+            ctx.font = '20px Arial';
+            ctx.fillText(`Playing as: ${playerName}`, canvas.width / 2, 85);
+            
+            // Carousel - show 3 characters at a time with selected in center
+            const cardWidth = 160;
+            const cardHeight = 220;
+            const cardY = 120;
+            const centerX = canvas.width / 2;
+            const cardSpacing = 180;
+            
+            // Draw navigation arrows
+            ctx.fillStyle = '#FFD700';
+            ctx.font = 'bold 48px Arial';
+            ctx.fillText('◀', 40, cardY + cardHeight / 2 + 15);
+            ctx.fillText('▶', canvas.width - 60, cardY + cardHeight / 2 + 15);
+            
+            // Draw characters in carousel (show 5: 2 left, center, 2 right)
+            for (let offset = -2; offset <= 2; offset++) {
+                let charIndex = (selectedCharacter + offset + characters.length) % characters.length;
+                const char = characters[charIndex];
+                const isSelected = offset === 0;
+                
+                // Calculate position with perspective
+                const cardX = centerX + offset * cardSpacing - cardWidth / 2;
+                const scale = isSelected ? 1.0 : 0.75;
+                const opacity = isSelected ? 1.0 : 0.6;
+                const yOffset = isSelected ? 0 : 20;
+                const hover = isSelected ? Math.sin(time * 4) * 5 : 0;
+                
+                // Skip if too far off screen
+                if (cardX < -cardWidth || cardX > canvas.width + cardWidth) continue;
+                
+                ctx.save();
+                ctx.globalAlpha = opacity;
+                
+                // Scale from center of card
+                const scaledWidth = cardWidth * scale;
+                const scaledHeight = cardHeight * scale;
+                const scaledX = cardX + (cardWidth - scaledWidth) / 2;
+                const scaledY = cardY + yOffset + (cardHeight - scaledHeight) / 2 + hover;
+                
+                // Card background
+                if (isSelected) {
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                    ctx.strokeStyle = '#FFD700';
+                    ctx.lineWidth = 4;
+                    ctx.shadowColor = '#FFD700';
+                    ctx.shadowBlur = 25;
+                } else {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.shadowBlur = 0;
+                }
+                
+                ctx.beginPath();
+                ctx.roundRect(scaledX, scaledY, scaledWidth, scaledHeight, 15 * scale);
+                ctx.fill();
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                
+                // Character preview (adjust position for scale)
+                const charPreviewX = scaledX + scaledWidth / 2 - 18 * scale;
+                const charPreviewY = scaledY + 30 * scale;
+                
+                ctx.save();
+                ctx.translate(scaledX + scaledWidth / 2, scaledY + scaledHeight / 2 - 30);
+                ctx.scale(scale, scale);
+                ctx.translate(-18, -30);
+                drawCharacterPreview(0, 0, char);
+                ctx.restore();
+                
+                // Character name
+                ctx.fillStyle = isSelected ? '#FFD700' : '#FFF';
+                ctx.font = `bold ${Math.floor(18 * scale)}px Arial`;
+                ctx.fillText(char.name, scaledX + scaledWidth / 2, scaledY + scaledHeight - 50 * scale);
+                
+                // Description
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = `${Math.floor(12 * scale)}px Arial`;
+                ctx.fillText(char.description, scaledX + scaledWidth / 2, scaledY + scaledHeight - 28 * scale);
+                
+                // Selection indicator for center character
+                if (isSelected) {
+                    ctx.fillStyle = '#FFD700';
+                    ctx.font = '24px Arial';
+                    ctx.fillText('▼', scaledX + scaledWidth / 2, scaledY - 5);
+                }
+                
+                ctx.restore();
             }
             
-            // Eye
-            const eyeX = facingRight ? x + 20 : x + 12;
+            // Character counter
+            ctx.fillStyle = '#FFF';
+            ctx.font = '16px Arial';
+            ctx.fillText(`${selectedCharacter + 1} / ${characters.length}`, canvas.width / 2, 365);
+            
+            // Navigation hints
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
+            ctx.font = '18px Arial';
+            ctx.fillText('← → to select  |  ENTER or SPACE to start', canvas.width / 2, 395);
+            
+            // Start button
+            const btnY = 420;
+            ctx.fillStyle = '#00FF7F';
+            ctx.shadowColor = '#00FF7F';
+            ctx.shadowBlur = 15;
+            ctx.beginPath();
+            ctx.roundRect(canvas.width / 2 - 120, btnY, 240, 50, 10);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 22px Arial';
+            ctx.fillText(`▶ PLAY AS ${characters[selectedCharacter].name.toUpperCase()}`, canvas.width / 2, btnY + 33);
+            
+            ctx.textAlign = 'left';
+        }
+        
+        // Draw character preview for selection screen (enhanced with unique features)
+        function drawCharacterPreview(x, y, char) {
+            const floatY = y + Math.sin(Date.now() / 300) * 4;
+            const isFemale = char.gender === 'female';
+            const skinTone = char.skinTone || '#FFDAB9';
+            const skinDark = shadeColor(skinTone, -20);
+            const hairColor = char.hairColor || '#5D4037';
+            const eyeColor = char.eyeColor || '#4169E1';
+            
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(x + 18, y + 58, 14, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Hair behind head (for long/curly styles)
+            if (char.hairStyle === 'long') {
+                ctx.fillStyle = hairColor;
+                ctx.beginPath();
+                ctx.ellipse(x + 18, floatY + 15, 16, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Flowing hair
+                ctx.beginPath();
+                ctx.moveTo(x + 2, floatY + 10);
+                ctx.quadraticCurveTo(x - 2, floatY + 35, x + 5, floatY + 45);
+                ctx.quadraticCurveTo(x + 8, floatY + 35, x + 6, floatY + 15);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo(x + 34, floatY + 10);
+                ctx.quadraticCurveTo(x + 38, floatY + 35, x + 31, floatY + 45);
+                ctx.quadraticCurveTo(x + 28, floatY + 35, x + 30, floatY + 15);
+                ctx.fill();
+            } else if (char.hairStyle === 'curly') {
+                ctx.fillStyle = hairColor;
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const hx = x + 18 + Math.cos(angle) * 14;
+                    const hy = floatY + 8 + Math.sin(angle) * 12;
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Body with gradient
+            const bodyGrad = ctx.createLinearGradient(x + 4, floatY + 18, x + 32, floatY + 45);
+            bodyGrad.addColorStop(0, char.shirtColor);
+            bodyGrad.addColorStop(0.5, shadeColor(char.shirtColor, -15));
+            bodyGrad.addColorStop(1, shadeColor(char.shirtColor, -30));
+            ctx.fillStyle = bodyGrad;
+            
+            if (isFemale) {
+                // Dress/feminine body shape
+                ctx.beginPath();
+                ctx.moveTo(x + 8, floatY + 18);
+                ctx.lineTo(x + 28, floatY + 18);
+                ctx.lineTo(x + 32, floatY + 42);
+                ctx.lineTo(x + 4, floatY + 42);
+                ctx.closePath();
+                ctx.fill();
+                // Dress ruffle
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    ctx.arc(x + 6 + i * 6, floatY + 42, 4, 0, Math.PI);
+                }
+                ctx.fill();
+            } else {
+                ctx.beginPath();
+                ctx.roundRect(x + 5, floatY + 18, 26, 25, 4);
+                ctx.fill();
+                // Overalls straps
+                ctx.fillStyle = char.pantsColor;
+                ctx.fillRect(x + 8, floatY + 18, 4, 10);
+                ctx.fillRect(x + 24, floatY + 18, 4, 10);
+            }
+            
+            // Body highlight
+            ctx.fillStyle = 'rgba(255,255,255,0.2)';
+            ctx.beginPath();
+            ctx.roundRect(x + 6, floatY + 19, 8, 12, 2);
+            ctx.fill();
+            
+            // Belt (only for non-dress)
+            if (!isFemale) {
+                ctx.fillStyle = shadeColor(char.pantsColor, -20);
+                ctx.fillRect(x + 5, floatY + 38, 26, 4);
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.roundRect(x + 14, floatY + 38, 8, 4, 1);
+                ctx.fill();
+            }
+            
+            // Head with gradient (using character skin tone)
+            const headGrad = ctx.createRadialGradient(x + 15, floatY + 8, 0, x + 18, floatY + 11, 13);
+            headGrad.addColorStop(0, shadeColor(skinTone, 10));
+            headGrad.addColorStop(0.7, skinTone);
+            headGrad.addColorStop(1, skinDark);
+            ctx.fillStyle = headGrad;
+            ctx.beginPath();
+            ctx.ellipse(x + 18, floatY + 11, 12, 12, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Blush for female characters
+            if (isFemale) {
+                ctx.fillStyle = 'rgba(255,150,150,0.4)';
+                ctx.beginPath();
+                ctx.ellipse(x + 8, floatY + 14, 4, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(x + 28, floatY + 14, 4, 3, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Ear
+            ctx.fillStyle = skinTone;
+            ctx.beginPath();
+            ctx.ellipse(x + 31, floatY + 12, 3, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Hat or Hair on top
+            if (char.hasHat) {
+                const hatGrad = ctx.createLinearGradient(x + 4, floatY, x + 32, floatY + 12);
+                hatGrad.addColorStop(0, shadeColor(char.hatColor, 20));
+                hatGrad.addColorStop(0.5, char.hatColor);
+                hatGrad.addColorStop(1, shadeColor(char.hatColor, -25));
+                ctx.fillStyle = hatGrad;
+                ctx.beginPath();
+                ctx.roundRect(x + 4, floatY - 2, 28, 12, 3);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.roundRect(x + 22, floatY + 4, 14, 8, 2);
+                ctx.fill();
+                
+                // Hat emblem
+                ctx.fillStyle = '#FFF';
+                ctx.beginPath();
+                ctx.arc(x + 18, floatY + 4, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = char.hatColor;
+                ctx.font = 'bold 7px Arial';
+                ctx.fillText(char.name[0], x + 15, floatY + 7);
+            } else if (char.hairStyle === 'short') {
+                // Short spiky hair
+                ctx.fillStyle = hairColor;
+                ctx.beginPath();
+                ctx.ellipse(x + 18, floatY + 2, 10, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (char.hairStyle === 'spiky') {
+                ctx.fillStyle = hairColor;
+                for (let i = 0; i < 5; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + 8 + i * 5, floatY + 5);
+                    ctx.lineTo(x + 10 + i * 5, floatY - 8 - Math.random() * 4);
+                    ctx.lineTo(x + 12 + i * 5, floatY + 5);
+                    ctx.fill();
+                }
+            } else if (char.hairStyle === 'ponytail') {
+                ctx.fillStyle = hairColor;
+                ctx.beginPath();
+                ctx.ellipse(x + 18, floatY + 2, 12, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+                // Ponytail
+                ctx.beginPath();
+                ctx.moveTo(x + 30, floatY);
+                ctx.quadraticCurveTo(x + 40, floatY + 5, x + 38, floatY + 25);
+                ctx.quadraticCurveTo(x + 35, floatY + 20, x + 32, floatY + 5);
+                ctx.fill();
+                // Hair tie
+                ctx.fillStyle = char.color;
+                ctx.beginPath();
+                ctx.ellipse(x + 32, floatY + 3, 3, 2, 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Crown for princess characters
+            if (char.hasCrown) {
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.moveTo(x + 8, floatY - 5);
+                ctx.lineTo(x + 10, floatY - 15);
+                ctx.lineTo(x + 14, floatY - 8);
+                ctx.lineTo(x + 18, floatY - 18);
+                ctx.lineTo(x + 22, floatY - 8);
+                ctx.lineTo(x + 26, floatY - 15);
+                ctx.lineTo(x + 28, floatY - 5);
+                ctx.closePath();
+                ctx.fill();
+                // Gems
+                ctx.fillStyle = '#FF1493';
+                ctx.beginPath();
+                ctx.arc(x + 18, floatY - 12, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#00CED1';
+                ctx.beginPath();
+                ctx.arc(x + 11, floatY - 10, 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(x + 25, floatY - 10, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // Eyes (larger for female characters)
+            const eyeSize = isFemale ? 5 : 4;
+            const eyeHeight = isFemale ? 6 : 5;
+            ctx.fillStyle = '#FFF';
+            ctx.beginPath();
+            ctx.ellipse(x + 13, floatY + 10, eyeSize - 1, eyeHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + 23, floatY + 10, eyeSize - 1, eyeHeight, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Iris
+            ctx.fillStyle = eyeColor;
+            ctx.beginPath();
+            ctx.arc(x + 14, floatY + 10, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 24, floatY + 10, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Pupil
             ctx.fillStyle = '#000';
             ctx.beginPath();
-            ctx.arc(eyeX, y + 11, 2.5, 0, Math.PI * 2);
+            ctx.arc(x + 14, floatY + 10, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 24, floatY + 10, 1.2, 0, Math.PI * 2);
             ctx.fill();
             
-            // Mustache
-            ctx.fillStyle = '#654321';
+            // Eye shine
+            ctx.fillStyle = '#FFF';
             ctx.beginPath();
-            ctx.ellipse(x + 18, y + 17, 9, 3, 0, 0, Math.PI * 2);
+            ctx.arc(x + 15, floatY + 9, 1, 0, Math.PI * 2);
             ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x + 25, floatY + 9, 1, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eyelashes for female
+            if (isFemale) {
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(x + 9, floatY + 6);
+                ctx.lineTo(x + 8, floatY + 4);
+                ctx.moveTo(x + 11, floatY + 5);
+                ctx.lineTo(x + 10, floatY + 3);
+                ctx.moveTo(x + 27, floatY + 6);
+                ctx.lineTo(x + 28, floatY + 4);
+                ctx.moveTo(x + 25, floatY + 5);
+                ctx.lineTo(x + 26, floatY + 3);
+                ctx.stroke();
+            }
+            
+            // Eyebrows
+            ctx.strokeStyle = hairColor;
+            ctx.lineWidth = isFemale ? 1.5 : 2;
+            ctx.beginPath();
+            ctx.moveTo(x + 10, floatY + 5);
+            ctx.quadraticCurveTo(x + 13, floatY + 3, x + 16, floatY + 5);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(x + 20, floatY + 5);
+            ctx.quadraticCurveTo(x + 23, floatY + 3, x + 26, floatY + 5);
+            ctx.stroke();
+            ctx.lineWidth = 1;
+            
+            // Nose
+            ctx.fillStyle = skinDark;
+            ctx.beginPath();
+            ctx.ellipse(x + 18, floatY + 13, isFemale ? 2 : 3, 2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Smile! 😊
+            ctx.strokeStyle = '#C0392B';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(x + 18, floatY + 14, 6, 0.2, Math.PI - 0.2);
+            ctx.stroke();
+            ctx.lineWidth = 1;
+            
+            // Mustache (only for male characters with mustache)
+            if (char.hasMustache) {
+                const mustacheGrad = ctx.createLinearGradient(x + 9, floatY + 15, x + 27, floatY + 20);
+                mustacheGrad.addColorStop(0, hairColor);
+                mustacheGrad.addColorStop(0.5, shadeColor(hairColor, -15));
+                mustacheGrad.addColorStop(1, shadeColor(hairColor, -30));
+                ctx.fillStyle = mustacheGrad;
+                ctx.beginPath();
+                ctx.moveTo(x + 18, floatY + 16);
+                ctx.quadraticCurveTo(x + 8, floatY + 17, x + 6, floatY + 21);
+                ctx.quadraticCurveTo(x + 10, floatY + 19, x + 18, floatY + 18);
+                ctx.quadraticCurveTo(x + 26, floatY + 19, x + 30, floatY + 21);
+                ctx.quadraticCurveTo(x + 28, floatY + 17, x + 18, floatY + 16);
+                ctx.fill();
+            }
+            
+            // Lipstick for female
+            if (isFemale) {
+                ctx.fillStyle = '#E74C3C';
+                ctx.beginPath();
+                ctx.ellipse(x + 18, floatY + 18, 4, 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
             
             // Legs
-            ctx.fillStyle = '#00008B';
-            ctx.fillRect(x + 7, y + 38, 9, 7);
-            ctx.fillRect(x + 20, y + 38, 9, 7);
+            const legGrad = ctx.createLinearGradient(x + 7, floatY + 42, x + 16, floatY + 48);
+            legGrad.addColorStop(0, char.pantsColor);
+            legGrad.addColorStop(1, shadeColor(char.pantsColor, -30));
+            ctx.fillStyle = legGrad;
+            
+            if (isFemale) {
+                // Leggings/tights
+                ctx.fillStyle = skinTone;
+            }
+            ctx.beginPath();
+            ctx.roundRect(x + 7, floatY + 44, 10, 8, 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.roundRect(x + 19, floatY + 44, 10, 8, 2);
+            ctx.fill();
             
             // Shoes
-            ctx.fillStyle = '#654321';
+            const shoeColor = isFemale ? char.color : '#8B4513';
+            const shoeGrad = ctx.createRadialGradient(x + 10, floatY + 50, 0, x + 12, floatY + 52, 10);
+            shoeGrad.addColorStop(0, shadeColor(shoeColor, 20));
+            shoeGrad.addColorStop(0.6, shoeColor);
+            shoeGrad.addColorStop(1, shadeColor(shoeColor, -30));
+            ctx.fillStyle = shoeGrad;
             ctx.beginPath();
-            ctx.ellipse(x + 11, y + 43, 6, 4, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 11, floatY + 52, 8, 5, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.beginPath();
-            ctx.ellipse(x + 25, y + 43, 6, 4, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 25, floatY + 52, 8, 5, 0, 0, Math.PI * 2);
             ctx.fill();
+            
+            // Shoe shine
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.beginPath();
+            ctx.ellipse(x + 9, floatY + 50, 3, 2, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // High heels for female
+            if (isFemale) {
+                ctx.fillStyle = shadeColor(shoeColor, -30);
+                ctx.fillRect(x + 8, floatY + 52, 3, 5);
+                ctx.fillRect(x + 22, floatY + 52, 3, 5);
+            }
+        }
+        
+        // Draw player at specific position (for title screen preview - enhanced)
+        function drawPlayerAt(x, y, facingRight) {
+            // Use the first character (Mario style) for title preview
+            drawCharacterPreview(x, y, characters[0]);
         }
 
         // Draw level progress bar
@@ -1167,7 +2153,7 @@ game_html = """
                         playerName = playerName.slice(0, -1);
                         e.preventDefault();
                     } else if (e.key === 'Enter' && playerName.length >= 1) {
-                        startGame();
+                        goToCharacterSelect();
                     } else if (e.key.length === 1 && playerName.length < 12) {
                         // Only allow letters, numbers, and some symbols
                         if (/^[a-zA-Z0-9_\- ]$/.test(e.key)) {
@@ -1179,8 +2165,26 @@ game_html = """
                 }
                 
                 if (e.key === 'Enter' && playerName.length >= 1) {
+                    goToCharacterSelect();
+                }
+                return;
+            }
+            
+            // Character selection input
+            if (gameState === 'character') {
+                if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+                    selectedCharacter = (selectedCharacter - 1 + characters.length) % characters.length;
+                }
+                if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+                    selectedCharacter = (selectedCharacter + 1) % characters.length;
+                }
+                if (e.key === 'Enter' || e.key === ' ') {
                     startGame();
                 }
+                if (e.key === 'Escape' || e.key === 'Backspace') {
+                    gameState = 'title';
+                }
+                e.preventDefault();
                 return;
             }
             
@@ -1189,7 +2193,9 @@ game_html = """
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') keys.jump = true;
             
             if ((e.key === 'r' || e.key === 'R') && (gameState === 'won' || gameState === 'lost')) {
-                resetGame();
+                // Go back to character select (keep the name)
+                gameState = 'character';
+                overlay.style.display = 'none';
             }
             
             // Prevent scrolling
@@ -1204,7 +2210,13 @@ game_html = """
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') keys.jump = false;
         });
         
-        // Start game from title screen
+        // Go to character selection from title
+        function goToCharacterSelect() {
+            gameState = 'character';
+            nameInputActive = false;
+        }
+        
+        // Start game from character selection
         function startGame() {
             gameState = 'playing';
             nameInputActive = false;
@@ -1257,7 +2269,37 @@ game_html = """
                 
                 // Check if clicked on start button
                 const btnY = 400;
-                if (playerName.length >= 1 && clickX >= canvas.width / 2 - 100 && clickX <= canvas.width / 2 + 100 && clickY >= btnY && clickY <= btnY + 50) {
+                const btnWidth = 280;
+                if (playerName.length >= 1 && clickX >= canvas.width / 2 - btnWidth / 2 && clickX <= canvas.width / 2 + btnWidth / 2 && clickY >= btnY && clickY <= btnY + 50) {
+                    goToCharacterSelect();
+                }
+            }
+            
+            if (gameState === 'character') {
+                // Check if clicked on left arrow
+                if (clickX >= 20 && clickX <= 80 && clickY >= 180 && clickY <= 280) {
+                    selectedCharacter = (selectedCharacter - 1 + characters.length) % characters.length;
+                }
+                
+                // Check if clicked on right arrow
+                if (clickX >= canvas.width - 80 && clickX <= canvas.width - 20 && clickY >= 180 && clickY <= 280) {
+                    selectedCharacter = (selectedCharacter + 1) % characters.length;
+                }
+                
+                // Check if clicked on left character card
+                const centerX = canvas.width / 2;
+                if (clickX >= centerX - 270 && clickX <= centerX - 90 && clickY >= 140 && clickY <= 340) {
+                    selectedCharacter = (selectedCharacter - 1 + characters.length) % characters.length;
+                }
+                
+                // Check if clicked on right character card
+                if (clickX >= centerX + 90 && clickX <= centerX + 270 && clickY >= 140 && clickY <= 340) {
+                    selectedCharacter = (selectedCharacter + 1) % characters.length;
+                }
+                
+                // Check if clicked on play button
+                const btnY = 420;
+                if (clickX >= canvas.width / 2 - 120 && clickX <= canvas.width / 2 + 120 && clickY >= btnY && clickY <= btnY + 50) {
                     startGame();
                 }
             }
@@ -1295,4 +2337,5 @@ with col2:
     st.markdown("👾 **Avoid** the purple enemies!")
 with col3:
     st.markdown("🚩 **Reach** the flag to win!")
+
 
