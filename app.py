@@ -176,10 +176,14 @@ game_html = """
         const overlayTitle = document.getElementById('overlayTitle');
         const overlayScore = document.getElementById('overlayScore');
 
-        // Game constants
-        const GRAVITY = 0.6;
-        const JUMP_STRENGTH = -14;
-        const PLAYER_SPEED = 5;
+        // Game constants (tuned for comfortable gameplay)
+        const GRAVITY = 0.4;
+        const JUMP_STRENGTH = -11;
+        const PLAYER_SPEED = 3.5;
+        
+        // World size (scrollable level)
+        const WORLD_WIDTH = 3000;
+        let cameraX = 0;
 
         // Colors
         const COLORS = {
@@ -193,7 +197,7 @@ game_html = """
             playerFace: '#FFDAB9',
             coin: '#FFD700',
             coinShine: '#FFFFC8',
-            enemy: '#8A2BE2',
+            enemy: '#CC0000',
             flagPole: '#8B4513',
             flag: '#00FF7F',
             cloud: '#FFFFFF',
@@ -227,50 +231,125 @@ game_html = """
             animTimer: 0
         };
 
-        // Platforms
+        // Platforms - Extended scrollable level
         const platforms = [
-            { x: 0, y: 450, width: 350, height: 50, isGround: true },
-            { x: 450, y: 450, width: 180, height: 50, isGround: true },
-            { x: 720, y: 450, width: 180, height: 50, isGround: true },
+            // Section 1: Starting area
+            { x: 0, y: 450, width: 400, height: 50, isGround: true },
             { x: 180, y: 370, width: 100, height: 25, isGround: false },
             { x: 350, y: 310, width: 90, height: 25, isGround: false },
-            { x: 130, y: 250, width: 90, height: 25, isGround: false },
-            { x: 300, y: 180, width: 100, height: 25, isGround: false },
-            { x: 480, y: 250, width: 90, height: 25, isGround: false },
-            { x: 620, y: 330, width: 100, height: 25, isGround: false },
-            { x: 770, y: 230, width: 90, height: 25, isGround: false },
+            
+            // Section 2: First gap
+            { x: 500, y: 450, width: 200, height: 50, isGround: true },
+            { x: 550, y: 350, width: 100, height: 25, isGround: false },
+            { x: 450, y: 250, width: 90, height: 25, isGround: false },
+            
+            // Section 3: Platforming challenge
+            { x: 800, y: 450, width: 150, height: 50, isGround: true },
+            { x: 750, y: 350, width: 80, height: 25, isGround: false },
+            { x: 880, y: 280, width: 100, height: 25, isGround: false },
+            { x: 1000, y: 350, width: 80, height: 25, isGround: false },
+            
+            // Section 4: Mid level
+            { x: 1050, y: 450, width: 250, height: 50, isGround: true },
+            { x: 1100, y: 350, width: 100, height: 25, isGround: false },
+            { x: 1250, y: 280, width: 90, height: 25, isGround: false },
+            
+            // Section 5: Tricky jumps
+            { x: 1400, y: 450, width: 120, height: 50, isGround: true },
+            { x: 1380, y: 350, width: 80, height: 25, isGround: false },
+            { x: 1500, y: 380, width: 70, height: 25, isGround: false },
+            { x: 1600, y: 320, width: 80, height: 25, isGround: false },
+            
+            // Section 6: More platforms
+            { x: 1700, y: 450, width: 200, height: 50, isGround: true },
+            { x: 1750, y: 350, width: 100, height: 25, isGround: false },
+            { x: 1650, y: 250, width: 90, height: 25, isGround: false },
+            { x: 1850, y: 280, width: 100, height: 25, isGround: false },
+            
+            // Section 7: Near the end
+            { x: 2000, y: 450, width: 150, height: 50, isGround: true },
+            { x: 2050, y: 350, width: 80, height: 25, isGround: false },
+            { x: 2180, y: 400, width: 100, height: 25, isGround: false },
+            
+            // Section 8: Final stretch
+            { x: 2300, y: 450, width: 200, height: 50, isGround: true },
+            { x: 2350, y: 350, width: 100, height: 25, isGround: false },
+            { x: 2500, y: 300, width: 90, height: 25, isGround: false },
+            
+            // Final platform with flag
+            { x: 2650, y: 450, width: 350, height: 50, isGround: true },
         ];
 
-        // Coins
+        // Coins - Spread across the extended level
         let coins = [];
         function initCoins() {
             coins = [
+                // Section 1
                 { x: 200, y: 330, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
                 { x: 250, y: 330, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
                 { x: 375, y: 270, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 155, y: 210, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 330, y: 140, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 370, y: 140, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 505, y: 210, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 650, y: 290, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 700, y: 290, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 795, y: 190, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                // Section 2
+                { x: 580, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                { x: 475, y: 210, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                // Section 3
+                { x: 780, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                { x: 910, y: 240, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                // Section 4
+                { x: 1130, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                { x: 1280, y: 240, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                // Section 5
+                { x: 1410, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                { x: 1530, y: 340, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                { x: 1630, y: 280, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                // Section 6
+                { x: 1780, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                { x: 1680, y: 210, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                { x: 1880, y: 240, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                // Section 7
+                { x: 2080, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                { x: 2210, y: 360, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                // Section 8
+                { x: 2380, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                { x: 2530, y: 260, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                // Final area
+                { x: 2750, y: 410, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
             ];
         }
 
-        // Enemies
+        // Enemies - More scary red monsters across the level
         let enemies = [];
         function initEnemies() {
             enemies = [
-                { x: 100, y: 415, width: 35, height: 32, patrolLeft: 50, patrolRight: 300, direction: 1, animFrame: 0 },
-                { x: 480, y: 415, width: 35, height: 32, patrolLeft: 450, patrolRight: 600, direction: 1, animFrame: 0 },
-                { x: 320, y: 148, width: 35, height: 32, patrolLeft: 300, patrolRight: 380, direction: 1, animFrame: 0 },
+                // Section 1
+                { x: 100, y: 412, width: 38, height: 38, patrolLeft: 50, patrolRight: 350, direction: 1, animFrame: 0 },
+                { x: 280, y: 412, width: 38, height: 38, patrolLeft: 50, patrolRight: 350, direction: -1, animFrame: 0 },
+                // Section 2
+                { x: 550, y: 412, width: 38, height: 38, patrolLeft: 500, patrolRight: 680, direction: 1, animFrame: 0 },
+                // Section 3
+                { x: 850, y: 412, width: 38, height: 38, patrolLeft: 800, patrolRight: 930, direction: 1, animFrame: 0 },
+                { x: 910, y: 242, width: 38, height: 38, patrolLeft: 880, patrolRight: 960, direction: -1, animFrame: 0 },
+                // Section 4
+                { x: 1100, y: 412, width: 38, height: 38, patrolLeft: 1050, patrolRight: 1280, direction: 1, animFrame: 0 },
+                { x: 1200, y: 412, width: 38, height: 38, patrolLeft: 1050, patrolRight: 1280, direction: -1, animFrame: 0 },
+                // Section 5
+                { x: 1420, y: 412, width: 38, height: 38, patrolLeft: 1400, patrolRight: 1500, direction: 1, animFrame: 0 },
+                // Section 6
+                { x: 1750, y: 412, width: 38, height: 38, patrolLeft: 1700, patrolRight: 1880, direction: 1, animFrame: 0 },
+                { x: 1780, y: 312, width: 38, height: 38, patrolLeft: 1750, patrolRight: 1830, direction: -1, animFrame: 0 },
+                // Section 7
+                { x: 2050, y: 412, width: 38, height: 38, patrolLeft: 2000, patrolRight: 2130, direction: 1, animFrame: 0 },
+                // Section 8
+                { x: 2350, y: 412, width: 38, height: 38, patrolLeft: 2300, patrolRight: 2480, direction: 1, animFrame: 0 },
+                { x: 2450, y: 412, width: 38, height: 38, patrolLeft: 2300, patrolRight: 2480, direction: -1, animFrame: 0 },
+                // Final area - guardians
+                { x: 2700, y: 412, width: 38, height: 38, patrolLeft: 2650, patrolRight: 2850, direction: 1, animFrame: 0 },
+                { x: 2800, y: 412, width: 38, height: 38, patrolLeft: 2650, patrolRight: 2950, direction: -1, animFrame: 0 },
             ];
         }
 
-        // Flag
+        // Flag - At the end of the extended level
         const flag = {
-            x: 840,
+            x: 2920,
             y: 300,
             poleHeight: 150,
             animTimer: 0
@@ -295,6 +374,7 @@ game_html = """
             player.facingRight = true;
             score = 0;
             gameState = 'playing';
+            cameraX = 0;  // Reset camera
             initCoins();
             initEnemies();
             overlay.style.display = 'none';
@@ -463,55 +543,134 @@ game_html = """
             }
         }
 
-        // Draw enemy
+        // Draw enemy - Scary red demon monster
         function drawEnemy(enemy) {
             const { x, y, width, height, animFrame } = enemy;
+            const bounce = Math.sin(Date.now() / 150) * 2;
             
-            // Body
-            ctx.fillStyle = COLORS.enemy;
+            // Shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
             ctx.beginPath();
-            ctx.ellipse(x + width/2, y + height/2 + 5, width/2, height/2 - 5, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + width/2, y + height + 2, width/2.5, 5, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Head/top
+            // Body - Dark red with gradient effect
+            const bodyGrad = ctx.createRadialGradient(x + width/2, y + height/2, 0, x + width/2, y + height/2, width/2);
+            bodyGrad.addColorStop(0, '#FF2020');
+            bodyGrad.addColorStop(0.7, '#AA0000');
+            bodyGrad.addColorStop(1, '#660000');
+            ctx.fillStyle = bodyGrad;
             ctx.beginPath();
-            ctx.ellipse(x + width/2, y + 8, width/2 - 4, 10, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + width/2, y + height/2 + 3 + bounce, width/2 + 2, height/2, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Spiky head/horns
+            ctx.fillStyle = '#880000';
+            // Left horn
+            ctx.beginPath();
+            ctx.moveTo(x + 5, y + 10);
+            ctx.lineTo(x - 3, y - 8);
+            ctx.lineTo(x + 12, y + 5);
+            ctx.closePath();
+            ctx.fill();
+            // Right horn
+            ctx.beginPath();
+            ctx.moveTo(x + width - 5, y + 10);
+            ctx.lineTo(x + width + 3, y - 8);
+            ctx.lineTo(x + width - 12, y + 5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Glowing angry eyes
+            ctx.fillStyle = '#FFFF00';
+            ctx.shadowColor = '#FF0000';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.ellipse(x + 10, y + 15 + bounce, 6, 5, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + width - 10, y + 15 + bounce, 6, 5, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Evil red pupils
+            ctx.fillStyle = '#FF0000';
+            ctx.beginPath();
+            ctx.arc(x + 11, y + 16 + bounce, 3, 0, Math.PI * 2);
+            ctx.arc(x + width - 9, y + 16 + bounce, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Black slits in pupils
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.ellipse(x + 11, y + 16 + bounce, 1, 3, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + width - 9, y + 16 + bounce, 1, 3, 0, 0, Math.PI * 2);
             ctx.fill();
             
             // Angry eyebrows
-            ctx.fillStyle = '#000';
+            ctx.strokeStyle = '#440000';
+            ctx.lineWidth = 3;
             ctx.beginPath();
-            ctx.moveTo(x + 7, y + 11);
-            ctx.lineTo(x + 15, y + 7);
-            ctx.lineTo(x + 15, y + 12);
-            ctx.fill();
+            ctx.moveTo(x + 3, y + 8 + bounce);
+            ctx.lineTo(x + 15, y + 12 + bounce);
+            ctx.stroke();
             ctx.beginPath();
-            ctx.moveTo(x + 28, y + 11);
-            ctx.lineTo(x + 20, y + 7);
-            ctx.lineTo(x + 20, y + 12);
+            ctx.moveTo(x + width - 3, y + 8 + bounce);
+            ctx.lineTo(x + width - 15, y + 12 + bounce);
+            ctx.stroke();
+            ctx.lineWidth = 1;
+            
+            // Scary mouth with fangs
+            ctx.fillStyle = '#220000';
+            ctx.beginPath();
+            ctx.moveTo(x + 8, y + 26 + bounce);
+            ctx.quadraticCurveTo(x + width/2, y + 35 + bounce, x + width - 8, y + 26 + bounce);
+            ctx.quadraticCurveTo(x + width/2, y + 30 + bounce, x + 8, y + 26 + bounce);
             ctx.fill();
             
-            // Eyes
-            ctx.fillStyle = '#FFF';
+            // Fangs
+            ctx.fillStyle = '#FFFFFF';
             ctx.beginPath();
-            ctx.arc(x + 11, y + 14, 4, 0, Math.PI * 2);
-            ctx.arc(x + 24, y + 14, 4, 0, Math.PI * 2);
+            ctx.moveTo(x + 11, y + 26 + bounce);
+            ctx.lineTo(x + 14, y + 33 + bounce);
+            ctx.lineTo(x + 17, y + 26 + bounce);
             ctx.fill();
-            ctx.fillStyle = '#000';
             ctx.beginPath();
-            ctx.arc(x + 12, y + 15, 1.5, 0, Math.PI * 2);
-            ctx.arc(x + 25, y + 15, 1.5, 0, Math.PI * 2);
+            ctx.moveTo(x + width - 11, y + 26 + bounce);
+            ctx.lineTo(x + width - 14, y + 33 + bounce);
+            ctx.lineTo(x + width - 17, y + 26 + bounce);
             ctx.fill();
             
-            // Feet
+            // Clawed feet
             const footOffset = animFrame === 0 ? 2 : -2;
-            ctx.fillStyle = '#501EB4';
+            ctx.fillStyle = '#660000';
+            // Left foot with claws
             ctx.beginPath();
-            ctx.ellipse(x + 8, y + 28 + footOffset, 7, 4, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 8, y + height - 3 + footOffset, 8, 5, 0, 0, Math.PI * 2);
             ctx.fill();
+            ctx.fillStyle = '#440000';
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x + 3 + i * 5, y + height + footOffset);
+                ctx.lineTo(x + 5 + i * 5, y + height + 5 + footOffset);
+                ctx.lineTo(x + 7 + i * 5, y + height + footOffset);
+                ctx.fill();
+            }
+            // Right foot with claws
+            ctx.fillStyle = '#660000';
             ctx.beginPath();
-            ctx.ellipse(x + 27, y + 28 - footOffset, 7, 4, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + width - 8, y + height - 3 - footOffset, 8, 5, 0, 0, Math.PI * 2);
             ctx.fill();
+            ctx.fillStyle = '#440000';
+            for (let i = 0; i < 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(x + width - 13 + i * 5, y + height - footOffset);
+                ctx.lineTo(x + width - 11 + i * 5, y + height + 5 - footOffset);
+                ctx.lineTo(x + width - 9 + i * 5, y + height - footOffset);
+                ctx.fill();
+            }
         }
 
         // Draw flag
@@ -645,11 +804,19 @@ game_html = """
                 }
             });
             
-            // Screen boundaries
+            // World boundaries (extended level)
             if (player.x < 0) player.x = 0;
-            if (player.x > canvas.width - player.width) {
-                player.x = canvas.width - player.width;
+            if (player.x > WORLD_WIDTH - player.width) {
+                player.x = WORLD_WIDTH - player.width;
             }
+            
+            // Update camera to follow player
+            const targetCameraX = player.x - canvas.width / 3;
+            cameraX += (targetCameraX - cameraX) * 0.1; // Smooth camera follow
+            
+            // Clamp camera to world bounds
+            if (cameraX < 0) cameraX = 0;
+            if (cameraX > WORLD_WIDTH - canvas.width) cameraX = WORLD_WIDTH - canvas.width;
             
             // Fell off screen
             if (player.y > canvas.height) {
@@ -675,7 +842,7 @@ game_html = """
         // Update enemies
         function updateEnemies() {
             enemies.forEach(enemy => {
-                enemy.x += 1.5 * enemy.direction;
+                enemy.x += 0.8 * enemy.direction;  // Slower enemy movement
                 
                 if (enemy.x <= enemy.patrolLeft) enemy.direction = 1;
                 if (enemy.x >= enemy.patrolRight) enemy.direction = -1;
@@ -724,25 +891,77 @@ game_html = """
             updateEnemies();
             checkFlag();
             
-            // Move clouds
+            // Move clouds (gentle drift)
             clouds.forEach(cloud => {
-                cloud.x -= 0.3;
+                cloud.x -= 0.15;
                 if (cloud.x < -60) cloud.x = canvas.width + 30;
             });
         }
 
-        // Draw game
+        // Draw game with camera offset
         function draw() {
             drawSky();
-            drawHills();
-            drawClouds();
             
+            // Save context and apply camera transform
+            ctx.save();
+            ctx.translate(-cameraX, 0);
+            
+            // Draw background elements (parallax - slower)
+            ctx.save();
+            ctx.translate(cameraX * 0.5, 0); // Parallax effect
+            drawHills();
+            ctx.restore();
+            
+            // Draw clouds with parallax
+            ctx.save();
+            ctx.translate(cameraX * 0.7, 0);
+            drawClouds();
+            ctx.restore();
+            
+            // Draw game objects
             platforms.forEach(drawPlatform);
             coins.forEach(drawCoin);
             enemies.forEach(drawEnemy);
             drawFlag();
             drawPlayer();
+            
+            ctx.restore();
+            
+            // UI is drawn without camera offset
             drawUI();
+            
+            // Draw progress bar at top
+            drawProgressBar();
+        }
+        
+        // Draw level progress bar
+        function drawProgressBar() {
+            const progress = player.x / WORLD_WIDTH;
+            const barWidth = 200;
+            const barHeight = 8;
+            const barX = canvas.width - barWidth - 20;
+            const barY = 20;
+            
+            // Background
+            ctx.fillStyle = 'rgba(0,0,0,0.5)';
+            ctx.roundRect(barX - 5, barY - 5, barWidth + 10, barHeight + 10, 5);
+            ctx.fill();
+            
+            // Progress track
+            ctx.fillStyle = '#444';
+            ctx.fillRect(barX, barY, barWidth, barHeight);
+            
+            // Progress fill
+            const gradient = ctx.createLinearGradient(barX, 0, barX + barWidth, 0);
+            gradient.addColorStop(0, '#00FF7F');
+            gradient.addColorStop(1, '#FFD700');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+            
+            // Flag icon at end
+            ctx.fillStyle = '#00FF7F';
+            ctx.font = '14px Arial';
+            ctx.fillText('🚩', barX + barWidth + 5, barY + 10);
         }
 
         // Game loop
