@@ -302,9 +302,14 @@ game_html = """
         const DISC_SIZE = 15;
         
         // Player health (Level 2 only)
-        const MAX_HEALTH = 50;
-        let playerHealth = MAX_HEALTH;
+        const MAX_HEALTH_L2 = 50;
+        const MAX_HEALTH_L3 = 100;
+        let playerHealth = MAX_HEALTH_L2;
         let invincibilityTimer = 0;
+        
+        function getMaxHealth() {
+            return currentLevel === 3 ? MAX_HEALTH_L3 : MAX_HEALTH_L2;
+        }
         
         // Enemy discs (Level 2 - enemies shoot at player)
         let enemyDiscs = [];
@@ -737,7 +742,7 @@ game_html = """
             
             // Reset health for Level 2 and 3
             if (levelNum >= 2) {
-                playerHealth = MAX_HEALTH;
+                playerHealth = levelNum === 3 ? MAX_HEALTH_L3 : MAX_HEALTH_L2;
             }
             
             if (levelNum === 3) {
@@ -2069,7 +2074,8 @@ game_html = """
             ctx.strokeRect(barX - 5, barY - 5, barWidth + 10, barHeight + 10);
             
             // Health bar fill
-            const healthPercent = playerHealth / MAX_HEALTH;
+            const maxHP = getMaxHealth();
+            const healthPercent = playerHealth / maxHP;
             const healthWidth = barWidth * healthPercent;
             
             // Color based on health
@@ -2086,7 +2092,7 @@ game_html = """
             // Health text
             ctx.fillStyle = '#FFFFFF';
             ctx.font = '10px "Courier New", monospace';
-            ctx.fillText(`HP: ${playerHealth}/${MAX_HEALTH}`, barX + 5, barY + 9);
+            ctx.fillText(`HP: ${playerHealth}/${maxHP}`, barX + 5, barY + 9);
         }
         
         // Draw NYC background
@@ -3412,7 +3418,7 @@ game_html = """
             
             // Reset health for Level 2 and 3
             if (currentLevel >= 2) {
-                playerHealth = MAX_HEALTH;
+                playerHealth = getMaxHealth();
             }
             invincibilityTimer = 0;
             enemyDiscs = [];
