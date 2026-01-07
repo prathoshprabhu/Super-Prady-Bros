@@ -233,8 +233,8 @@ game_html = """
         const characters = [
             { 
                 name: 'ARES', 
-                circuitColor: '#00FFFF',
-                secondaryColor: '#0088FF',
+                circuitColor: '#FF0044',
+                secondaryColor: '#AA0022',
                 description: 'Elite Grid Warrior',
                 helmetStyle: 'visor',
                 circuitPattern: 'angular'
@@ -257,8 +257,8 @@ game_html = """
             },
             { 
                 name: 'RINZLER', 
-                circuitColor: '#FF0044',
-                secondaryColor: '#AA0022',
+                circuitColor: '#00FFFF',
+                secondaryColor: '#0088FF',
                 description: 'Repurposed Warrior',
                 helmetStyle: 'full',
                 circuitPattern: 'aggressive'
