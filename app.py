@@ -294,7 +294,7 @@ game_html = """
         const DISC_SIZE = 15;
         
         // Player health (Level 2 only)
-        const MAX_HEALTH = 25;
+        const MAX_HEALTH = 50;
         let playerHealth = MAX_HEALTH;
         let invincibilityTimer = 0;
         
@@ -1906,13 +1906,15 @@ game_html = """
             ctx.fillText(`LVL ${currentLevel}: ${levelText}`, canvas.width - 115, 32);
             ctx.shadowBlur = 0;
             
-            // Disc indicator
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-            ctx.fillRect(15, 48, 85, 22);
-            const discColor = disc.active ? '#555' : characters[selectedCharacter].circuitColor;
-            ctx.fillStyle = discColor;
-            ctx.font = '12px "Courier New", monospace';
-            ctx.fillText('[X] DISC', 22, 63);
+            // Disc indicator (Level 2 only)
+            if (currentLevel === 2) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(15, 48, 85, 22);
+                const discColor = disc.active ? '#555' : characters[selectedCharacter].circuitColor;
+                ctx.fillStyle = discColor;
+                ctx.font = '12px "Courier New", monospace';
+                ctx.fillText('[X] DISC', 22, 63);
+            }
         }
 
         // Collision detection
@@ -2089,7 +2091,11 @@ game_html = """
             updatePlayer();
             updateCoins();
             updateEnemies();
-            updateDisc();
+            
+            // Update player disc (Level 2 only)
+            if (currentLevel === 2) {
+                updateDisc();
+            }
             
             // Update NYC enemies for Level 2
             if (currentLevel === 2) {
@@ -2174,7 +2180,11 @@ game_html = """
             
             drawFlag();
             drawPlayer();
-            drawDisc();
+            
+            // Player disc (Level 2 only)
+            if (currentLevel === 2) {
+                drawDisc();
+            }
             
             ctx.restore();
             
@@ -2723,8 +2733,8 @@ game_html = """
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') keys.jump = true;
             
-            // Throw disc with X or K
-            if ((e.key === 'x' || e.key === 'X' || e.key === 'k' || e.key === 'K') && gameState === 'playing') {
+            // Throw disc with X or K (Level 2 only)
+            if ((e.key === 'x' || e.key === 'X' || e.key === 'k' || e.key === 'K') && gameState === 'playing' && currentLevel === 2) {
                 throwDisc();
             }
             
@@ -2866,8 +2876,8 @@ game_html = """
                 }
             }
             
-            // Throw disc on click during gameplay
-            if (gameState === 'playing') {
+            // Throw disc on click during gameplay (Level 2 only)
+            if (gameState === 'playing' && currentLevel === 2) {
                 throwDisc();
             }
             
