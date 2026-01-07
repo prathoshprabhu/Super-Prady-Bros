@@ -399,7 +399,8 @@ game_html = """
         const keys = {
             left: false,
             right: false,
-            jump: false
+            jump: false,
+            down: false
         };
 
         // Player
@@ -623,8 +624,8 @@ game_html = """
                     type: 'basic',
                     speed: 1.5,
                     health: 1,
-                    shootTimer: Math.random() * 60,
-                    shootCooldown: 90,
+                    shootTimer: Math.random() * 120,
+                    shootCooldown: 180, // ~3 seconds between shots
                     waveOffset: Math.random() * Math.PI * 2
                 });
             }
@@ -638,8 +639,8 @@ game_html = """
                     type: 'fast',
                     speed: 2.5,
                     health: 1,
-                    shootTimer: Math.random() * 40,
-                    shootCooldown: 60,
+                    shootTimer: Math.random() * 100,
+                    shootCooldown: 150, // ~2.5 seconds between shots
                     waveOffset: Math.random() * Math.PI * 2
                 });
             }
@@ -653,8 +654,8 @@ game_html = """
                     type: 'heavy',
                     speed: 1.0,
                     health: 3,
-                    shootTimer: Math.random() * 30,
-                    shootCooldown: 50,
+                    shootTimer: Math.random() * 80,
+                    shootCooldown: 120, // ~2 seconds between shots
                     waveOffset: Math.random() * Math.PI * 2
                 });
             }
@@ -668,7 +669,7 @@ game_html = """
                 speed: 0.8,
                 health: 8,
                 shootTimer: 0,
-                shootCooldown: 30,
+                shootCooldown: 90, // ~1.5 seconds between shots
                 waveOffset: 0
             });
         }
@@ -1795,10 +1796,10 @@ game_html = """
         
         // Update player jet
         function updateJet() {
-            // Vertical movement
-            if (keys.jump || keys.left) { // Up
+            // Vertical movement (↑/W/Space = Up, ↓/S = Down)
+            if (keys.jump) {
                 jetVelY = -JET_SPEED;
-            } else if (keys.right) { // Down (use right key for down in space mode)
+            } else if (keys.down) {
                 jetVelY = JET_SPEED;
             } else {
                 jetVelY *= 0.9; // Decelerate
@@ -3363,6 +3364,7 @@ game_html = """
             if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') keys.jump = true;
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') keys.down = true;
             
             // Throw disc (Level 2) or shoot missile (Level 3)
             if ((e.key === 'x' || e.key === 'X' || e.key === 'k' || e.key === 'K') && gameState === 'playing') {
@@ -3393,6 +3395,7 @@ game_html = """
             if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') keys.jump = false;
+            if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') keys.down = false;
         });
         
         // Go to character selection from title
