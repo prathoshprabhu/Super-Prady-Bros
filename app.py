@@ -223,6 +223,20 @@ game_html = """
             gridLine: 'rgba(255, 215, 0, 0.1)'
         };
         
+        // Colors - Space Dimension (Level 3)
+        const COLORS_L3 = {
+            skyTop: '#000011',
+            skyBottom: '#000033',
+            ground: '#000000',
+            grass: '#00FFAA',
+            platform: '#111122',
+            platformTop: '#00FFAA',
+            neonCyan: '#00FFFF',
+            neonOrange: '#FF6600',
+            neonRed: '#FF0066',
+            gridLine: 'rgba(0, 255, 170, 0.1)'
+        };
+        
         // Current colors (changes based on level)
         let COLORS = {
             skyTop: '#000000',
@@ -251,23 +265,17 @@ game_html = """
         
         // Update colors based on level
         function updateLevelColors() {
-            if (currentLevel === 1) {
-                COLORS.skyTop = COLORS_L1.skyTop;
-                COLORS.skyBottom = COLORS_L1.skyBottom;
-                COLORS.ground = COLORS_L1.ground;
-                COLORS.grass = COLORS_L1.grass;
-                COLORS.platform = COLORS_L1.platform;
-                COLORS.platformTop = COLORS_L1.platformTop;
-                COLORS.gridLine = COLORS_L1.gridLine;
-            } else {
-                COLORS.skyTop = COLORS_L2.skyTop;
-                COLORS.skyBottom = COLORS_L2.skyBottom;
-                COLORS.ground = COLORS_L2.ground;
-                COLORS.grass = COLORS_L2.grass;
-                COLORS.platform = COLORS_L2.platform;
-                COLORS.platformTop = COLORS_L2.platformTop;
-                COLORS.gridLine = COLORS_L2.gridLine;
-            }
+            let src = COLORS_L1;
+            if (currentLevel === 2) src = COLORS_L2;
+            else if (currentLevel === 3) src = COLORS_L3;
+            
+            COLORS.skyTop = src.skyTop;
+            COLORS.skyBottom = src.skyBottom;
+            COLORS.ground = src.ground;
+            COLORS.grass = src.grass;
+            COLORS.platform = src.platform;
+            COLORS.platformTop = src.platformTop;
+            COLORS.gridLine = src.gridLine;
         }
 
         // Game state
@@ -302,6 +310,17 @@ game_html = """
         let enemyDiscs = [];
         const ENEMY_DISC_SPEED = 5;
         const ENEMY_DISC_SIZE = 10;
+        
+        // Level 3 - Space Shooter variables
+        let missiles = []; // Player missiles
+        let spaceDrones = []; // Enemy drones
+        let stars = []; // Background stars
+        const MISSILE_SPEED = 10;
+        const JET_SPEED = 3;
+        let jetY = 250; // Jet vertical position
+        let jetVelY = 0; // Jet vertical velocity
+        const JET_WIDTH = 60;
+        const JET_HEIGHT = 30;
         
         // Available characters - TRON inspired programs
         const characters = [
@@ -578,6 +597,89 @@ game_html = """
                     { x: 2750, y: 405, width: 50, height: 55, patrolLeft: 2680, patrolRight: 2920, direction: 1, type: 'boss', speed: 0.5, health: 4, shootTimer: 0, shootCooldown: 60 },
                 ];
             }
+            
+            // Level 3 - Space Drones
+            if (currentLevel === 3) {
+                initSpaceDrones();
+                initStars();
+            }
+        }
+        
+        // Initialize space drones for Level 3
+        function initSpaceDrones() {
+            spaceDrones = [];
+            // Wave 1 - Basic drones
+            for (let i = 0; i < 5; i++) {
+                spaceDrones.push({
+                    x: 900 + i * 200,
+                    y: 100 + Math.random() * 300,
+                    width: 40,
+                    height: 25,
+                    type: 'basic',
+                    speed: 1.5,
+                    health: 1,
+                    shootTimer: Math.random() * 60,
+                    shootCooldown: 90,
+                    waveOffset: Math.random() * Math.PI * 2
+                });
+            }
+            // Wave 2 - Fast drones
+            for (let i = 0; i < 4; i++) {
+                spaceDrones.push({
+                    x: 1800 + i * 250,
+                    y: 80 + Math.random() * 340,
+                    width: 35,
+                    height: 20,
+                    type: 'fast',
+                    speed: 2.5,
+                    health: 1,
+                    shootTimer: Math.random() * 40,
+                    shootCooldown: 60,
+                    waveOffset: Math.random() * Math.PI * 2
+                });
+            }
+            // Wave 3 - Heavy drones
+            for (let i = 0; i < 3; i++) {
+                spaceDrones.push({
+                    x: 2500 + i * 300,
+                    y: 120 + Math.random() * 260,
+                    width: 55,
+                    height: 35,
+                    type: 'heavy',
+                    speed: 1.0,
+                    health: 3,
+                    shootTimer: Math.random() * 30,
+                    shootCooldown: 50,
+                    waveOffset: Math.random() * Math.PI * 2
+                });
+            }
+            // Boss drone at the end
+            spaceDrones.push({
+                x: 3200,
+                y: 200,
+                width: 80,
+                height: 50,
+                type: 'boss',
+                speed: 0.8,
+                health: 8,
+                shootTimer: 0,
+                shootCooldown: 30,
+                waveOffset: 0
+            });
+        }
+        
+        // Initialize stars for space background
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 100; i++) {
+                stars.push({
+                    x: Math.random() * 4000,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2 + 1,
+                    speed: Math.random() * 2 + 0.5,
+                    brightness: Math.random()
+                });
+            }
         }
 
         // Portal - At the end of each level
@@ -626,23 +728,39 @@ game_html = """
         // Load a specific level
         function loadLevel(levelNum) {
             currentLevel = levelNum;
-            player.x = 50;
-            player.y = 350;
-            player.velX = 0;
-            player.velY = 0;
-            player.onGround = false;
             cameraX = 0;
             disc.active = false;
-            
-            // Reset health for Level 2
-            if (levelNum === 2) {
-                playerHealth = MAX_HEALTH;
-            }
             invincibilityTimer = 0;
             enemyDiscs = [];
+            missiles = [];
+            droneProjectiles = [];
+            
+            // Reset health for Level 2 and 3
+            if (levelNum >= 2) {
+                playerHealth = MAX_HEALTH;
+            }
+            
+            if (levelNum === 3) {
+                // Space shooter mode
+                jetY = canvas.height / 2 - JET_HEIGHT / 2;
+                jetVelY = 0;
+                player.width = JET_WIDTH;
+                player.height = JET_HEIGHT;
+            } else {
+                // Platformer mode
+                player.x = 50;
+                player.y = 350;
+                player.velX = 0;
+                player.velY = 0;
+                player.onGround = false;
+                player.width = 36;
+                player.height = 48;
+            }
             
             updateLevelColors();
-            loadLevelPlatforms();
+            if (levelNum !== 3) {
+                loadLevelPlatforms();
+            }
             initCoins();
             initEnemies();
         }
@@ -655,9 +773,13 @@ game_html = """
             if (currentLevel === 1) {
                 // Go to Level 2 (NYC)
                 gameState = 'transition';
-                transitionDirection = 1; // Fade out
+                transitionDirection = 1;
+            } else if (currentLevel === 2) {
+                // Go to Level 3 (Space)
+                gameState = 'transition';
+                transitionDirection = 1;
             } else {
-                // Won the game!
+                // Won the game after Level 3!
                 gameWon();
             }
         }
@@ -667,7 +789,7 @@ game_html = """
             if (transitionDirection === 1) {
                 transitionAlpha += 0.02;
                 if (transitionAlpha >= 1) {
-                    loadLevel(2);
+                    loadLevel(currentLevel + 1);
                     transitionDirection = -1; // Start fade in
                 }
             } else if (transitionDirection === -1) {
@@ -687,12 +809,25 @@ game_html = """
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
                 
                 if (transitionDirection === 1 && transitionAlpha > 0.5) {
-                    ctx.fillStyle = `rgba(255, 215, 0, ${(transitionAlpha - 0.5) * 2})`;
-                    ctx.font = 'bold 36px "Courier New", monospace';
+                    let titleText = 'ENTERING NYC DIMENSION';
+                    let titleColor = 'rgba(255, 215, 0, ';
+                    let subText = '[ USE IDENTITY DISC ]';
+                    
+                    if (currentLevel === 2) {
+                        titleText = 'ENTERING SPACE DIMENSION';
+                        titleColor = 'rgba(0, 255, 170, ';
+                        subText = '[ PILOT YOUR JET - FIRE MISSILES ]';
+                    }
+                    
+                    ctx.fillStyle = titleColor + `${(transitionAlpha - 0.5) * 2})`;
+                    ctx.font = 'bold 32px "Courier New", monospace';
                     ctx.textAlign = 'center';
-                    ctx.fillText('ENTERING NYC DIMENSION', canvas.width / 2, canvas.height / 2);
-                    ctx.font = '18px "Courier New", monospace';
-                    ctx.fillText('[ CHECKPOINT SAVED ]', canvas.width / 2, canvas.height / 2 + 40);
+                    ctx.fillText(titleText, canvas.width / 2, canvas.height / 2);
+                    ctx.font = '16px "Courier New", monospace';
+                    ctx.fillText('[ CHECKPOINT SAVED ]', canvas.width / 2, canvas.height / 2 + 35);
+                    ctx.font = '14px "Courier New", monospace';
+                    ctx.fillStyle = `rgba(255, 255, 255, ${(transitionAlpha - 0.5) * 1.5})`;
+                    ctx.fillText(subText, canvas.width / 2, canvas.height / 2 + 60);
                     ctx.textAlign = 'left';
                 }
             }
@@ -1340,6 +1475,448 @@ game_html = """
             ctx.restore();
         }
         
+        // ========== LEVEL 3 - SPACE SHOOTER FUNCTIONS ==========
+        
+        // Draw player jet (based on character colors)
+        function drawJet() {
+            const char = characters[selectedCharacter];
+            const mainColor = char.circuitColor || '#00FFFF';
+            const secondColor = char.secondaryColor || '#0088FF';
+            const jetX = 80; // Fixed X position on screen
+            const y = jetY;
+            
+            // Jet trail/exhaust
+            ctx.shadowColor = '#FF6600';
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = '#FF6600';
+            const exhaustFlicker = Math.random() * 10;
+            ctx.beginPath();
+            ctx.moveTo(jetX - 10, y + JET_HEIGHT/2);
+            ctx.lineTo(jetX - 30 - exhaustFlicker, y + JET_HEIGHT/2 - 5);
+            ctx.lineTo(jetX - 25 - exhaustFlicker/2, y + JET_HEIGHT/2);
+            ctx.lineTo(jetX - 30 - exhaustFlicker, y + JET_HEIGHT/2 + 5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Main body (fuselage)
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.moveTo(jetX + JET_WIDTH, y + JET_HEIGHT/2);
+            ctx.lineTo(jetX + 10, y);
+            ctx.lineTo(jetX - 5, y + 5);
+            ctx.lineTo(jetX - 5, y + JET_HEIGHT - 5);
+            ctx.lineTo(jetX + 10, y + JET_HEIGHT);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Circuit outline
+            ctx.strokeStyle = mainColor;
+            ctx.shadowColor = mainColor;
+            ctx.shadowBlur = 8;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Wings
+            ctx.fillStyle = '#000000';
+            // Top wing
+            ctx.beginPath();
+            ctx.moveTo(jetX + 15, y + 5);
+            ctx.lineTo(jetX + 30, y - 12);
+            ctx.lineTo(jetX + 40, y - 10);
+            ctx.lineTo(jetX + 35, y + 5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Bottom wing
+            ctx.beginPath();
+            ctx.moveTo(jetX + 15, y + JET_HEIGHT - 5);
+            ctx.lineTo(jetX + 30, y + JET_HEIGHT + 12);
+            ctx.lineTo(jetX + 40, y + JET_HEIGHT + 10);
+            ctx.lineTo(jetX + 35, y + JET_HEIGHT - 5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            // Cockpit
+            ctx.fillStyle = secondColor;
+            ctx.beginPath();
+            ctx.ellipse(jetX + 35, y + JET_HEIGHT/2, 10, 6, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Circuit lines on body
+            ctx.strokeStyle = mainColor;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(jetX, y + JET_HEIGHT/2);
+            ctx.lineTo(jetX + 50, y + JET_HEIGHT/2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(jetX + 20, y + 8);
+            ctx.lineTo(jetX + 20, y + JET_HEIGHT - 8);
+            ctx.stroke();
+            
+            ctx.shadowBlur = 0;
+            
+            // Draw player name above jet
+            if (playerName) {
+                ctx.font = 'bold 10px "Courier New", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = mainColor;
+                ctx.shadowColor = mainColor;
+                ctx.shadowBlur = 5;
+                ctx.fillText(playerName.toUpperCase(), jetX + JET_WIDTH/2, y - 15);
+                ctx.shadowBlur = 0;
+                ctx.textAlign = 'left';
+            }
+        }
+        
+        // Draw missile (player weapon in Level 3)
+        function drawMissile(m) {
+            const char = characters[selectedCharacter];
+            const missileColor = char.circuitColor || '#00FFFF';
+            
+            ctx.save();
+            ctx.translate(m.x, m.y);
+            
+            ctx.shadowColor = missileColor;
+            ctx.shadowBlur = 10;
+            
+            // Missile body
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.moveTo(20, 0);
+            ctx.lineTo(0, -5);
+            ctx.lineTo(-5, -4);
+            ctx.lineTo(-5, 4);
+            ctx.lineTo(0, 5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Circuit outline
+            ctx.strokeStyle = missileColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Exhaust
+            ctx.fillStyle = '#FF6600';
+            ctx.beginPath();
+            ctx.moveTo(-5, -2);
+            ctx.lineTo(-12 - Math.random() * 5, 0);
+            ctx.lineTo(-5, 2);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+        
+        // Draw space drone enemy
+        function drawSpaceDrone(drone) {
+            const { x, y, width, height, type, health } = drone;
+            const pulse = 0.7 + Math.sin(Date.now() / 200) * 0.3;
+            
+            ctx.save();
+            
+            // Drone body - black with red circuits
+            ctx.fillStyle = '#000000';
+            
+            if (type === 'basic') {
+                // Basic drone - simple design
+                ctx.beginPath();
+                ctx.ellipse(x + width/2, y + height/2, width/2, height/2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#FF0044';
+                ctx.shadowColor = '#FF0044';
+                ctx.shadowBlur = 6 * pulse;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Eye
+                ctx.fillStyle = '#FF0044';
+                ctx.beginPath();
+                ctx.arc(x + width/2 + 5, y + height/2, 4, 0, Math.PI * 2);
+                ctx.fill();
+                
+            } else if (type === 'fast') {
+                // Fast drone - sleek triangle
+                ctx.beginPath();
+                ctx.moveTo(x + width, y + height/2);
+                ctx.lineTo(x, y);
+                ctx.lineTo(x + 10, y + height/2);
+                ctx.lineTo(x, y + height);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.strokeStyle = '#FF6600';
+                ctx.shadowColor = '#FF6600';
+                ctx.shadowBlur = 8 * pulse;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+            } else if (type === 'heavy') {
+                // Heavy drone - chunky
+                ctx.fillRect(x, y, width, height);
+                
+                ctx.strokeStyle = '#FF0044';
+                ctx.shadowColor = '#FF0044';
+                ctx.shadowBlur = 6 * pulse;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x, y, width, height);
+                
+                // Cannon
+                ctx.fillRect(x + width - 5, y + height/2 - 3, 15, 6);
+                ctx.strokeRect(x + width - 5, y + height/2 - 3, 15, 6);
+                
+                // Health bar for heavy
+                if (health > 1) {
+                    ctx.fillStyle = '#FF0044';
+                    for (let i = 0; i < health; i++) {
+                        ctx.fillRect(x + 5 + i * 15, y - 8, 12, 4);
+                    }
+                }
+                
+            } else if (type === 'boss') {
+                // Boss drone - large and menacing
+                ctx.beginPath();
+                ctx.moveTo(x + width, y + height/2);
+                ctx.lineTo(x + width - 20, y);
+                ctx.lineTo(x, y + 10);
+                ctx.lineTo(x, y + height - 10);
+                ctx.lineTo(x + width - 20, y + height);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.strokeStyle = '#FF0066';
+                ctx.shadowColor = '#FF0066';
+                ctx.shadowBlur = 12 * pulse;
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // Multiple guns
+                ctx.fillStyle = '#FF0066';
+                ctx.fillRect(x + width - 10, y + 10, 20, 8);
+                ctx.fillRect(x + width - 10, y + height - 18, 20, 8);
+                ctx.fillRect(x + width - 5, y + height/2 - 4, 15, 8);
+                
+                // Health bar
+                ctx.fillStyle = '#FF0066';
+                for (let i = 0; i < health; i++) {
+                    ctx.fillRect(x + 5 + i * 10, y - 12, 8, 6);
+                }
+            }
+            
+            ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+        
+        // Draw drone projectile
+        function drawDroneProjectile(proj) {
+            ctx.save();
+            ctx.shadowColor = '#FF0044';
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = '#FF0044';
+            ctx.beginPath();
+            ctx.arc(proj.x, proj.y, 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+        
+        // Draw space background
+        function drawSpaceBackground() {
+            // Deep space gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#000011');
+            gradient.addColorStop(0.5, '#000022');
+            gradient.addColorStop(1, '#001133');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw stars (parallax scrolling)
+            stars.forEach(star => {
+                const screenX = (star.x - cameraX * 0.3) % canvas.width;
+                const twinkle = 0.5 + Math.sin(Date.now() / 200 + star.brightness * 10) * 0.5;
+                ctx.fillStyle = `rgba(255, 255, 255, ${twinkle})`;
+                ctx.fillRect(screenX, star.y, star.size, star.size);
+            });
+            
+            // Nebula effect
+            ctx.fillStyle = 'rgba(0, 100, 150, 0.05)';
+            ctx.beginPath();
+            ctx.arc(300, 200, 150, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'rgba(100, 0, 150, 0.05)';
+            ctx.beginPath();
+            ctx.arc(600, 350, 120, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        // Draw Level 3 finish portal
+        function drawSpacePortal() {
+            const portalX = 3500 - cameraX;
+            const portalY = canvas.height / 2;
+            const pulse = 0.6 + Math.sin(Date.now() / 150) * 0.4;
+            
+            // Only draw if visible
+            if (portalX > -100 && portalX < canvas.width + 100) {
+                ctx.save();
+                
+                // Outer glow
+                ctx.shadowColor = '#00FFAA';
+                ctx.shadowBlur = 30 * pulse;
+                ctx.strokeStyle = '#00FFAA';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.ellipse(portalX, portalY, 40, 80, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                
+                // Inner portal
+                ctx.fillStyle = `rgba(0, 255, 170, ${0.3 * pulse})`;
+                ctx.fill();
+                
+                // Core
+                ctx.fillStyle = '#00FFAA';
+                ctx.beginPath();
+                ctx.arc(portalX, portalY, 10, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+        }
+        
+        // Update player jet
+        function updateJet() {
+            // Vertical movement
+            if (keys.jump || keys.left) { // Up
+                jetVelY = -JET_SPEED;
+            } else if (keys.right) { // Down (use right key for down in space mode)
+                jetVelY = JET_SPEED;
+            } else {
+                jetVelY *= 0.9; // Decelerate
+            }
+            
+            jetY += jetVelY;
+            
+            // Keep in bounds
+            if (jetY < 20) jetY = 20;
+            if (jetY > canvas.height - JET_HEIGHT - 20) jetY = canvas.height - JET_HEIGHT - 20;
+            
+            // Auto-scroll camera
+            cameraX += 1.5;
+            
+            // Check if reached end
+            if (cameraX > 3400) {
+                gameWon();
+            }
+            
+            // Update player position for collision detection
+            player.x = 80 + cameraX;
+            player.y = jetY;
+            player.width = JET_WIDTH;
+            player.height = JET_HEIGHT;
+        }
+        
+        // Update missiles
+        function updateMissiles() {
+            for (let i = missiles.length - 1; i >= 0; i--) {
+                const m = missiles[i];
+                m.x += MISSILE_SPEED;
+                
+                // Remove if off screen
+                if (m.x > cameraX + canvas.width + 50) {
+                    missiles.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collision with drones
+                for (let j = spaceDrones.length - 1; j >= 0; j--) {
+                    const drone = spaceDrones[j];
+                    if (m.x > drone.x && m.x < drone.x + drone.width &&
+                        m.y > drone.y && m.y < drone.y + drone.height) {
+                        drone.health--;
+                        missiles.splice(i, 1);
+                        if (drone.health <= 0) {
+                            const bonus = drone.type === 'boss' ? 200 : (drone.type === 'heavy' ? 50 : 20);
+                            score += bonus;
+                            spaceDrones.splice(j, 1);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        
+        // Update space drones
+        let droneProjectiles = [];
+        
+        function updateSpaceDrones() {
+            const jetCenterY = jetY + JET_HEIGHT / 2;
+            
+            spaceDrones.forEach(drone => {
+                // Wave motion
+                const waveY = Math.sin(Date.now() / 500 + drone.waveOffset) * 20;
+                
+                // Move towards player (scroll with camera but also move left)
+                drone.x -= drone.speed * 0.5;
+                
+                // Shoot at player
+                drone.shootTimer++;
+                if (drone.shootTimer >= drone.shootCooldown && drone.x < cameraX + canvas.width) {
+                    droneProjectiles.push({
+                        x: drone.x,
+                        y: drone.y + drone.height / 2,
+                        velX: -6,
+                        velY: (jetCenterY - (drone.y + drone.height/2)) * 0.02
+                    });
+                    drone.shootTimer = 0;
+                }
+                
+                // Collision with player jet
+                const jetRect = { x: 80 + cameraX, y: jetY, width: JET_WIDTH, height: JET_HEIGHT };
+                const droneRect = { x: drone.x, y: drone.y, width: drone.width, height: drone.height };
+                if (checkCollision(jetRect, droneRect) && invincibilityTimer <= 0) {
+                    playerHealth -= 10;
+                    invincibilityTimer = 60;
+                    if (playerHealth <= 0) gameOver();
+                }
+            });
+            
+            // Update projectiles
+            for (let i = droneProjectiles.length - 1; i >= 0; i--) {
+                const proj = droneProjectiles[i];
+                proj.x += proj.velX;
+                proj.y += proj.velY;
+                
+                // Remove if off screen
+                if (proj.x < cameraX - 50) {
+                    droneProjectiles.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collision with player
+                if (proj.x > 80 + cameraX - 10 && proj.x < 80 + cameraX + JET_WIDTH + 10 &&
+                    proj.y > jetY - 10 && proj.y < jetY + JET_HEIGHT + 10 &&
+                    invincibilityTimer <= 0) {
+                    playerHealth -= 5;
+                    invincibilityTimer = 30;
+                    droneProjectiles.splice(i, 1);
+                    if (playerHealth <= 0) gameOver();
+                }
+            }
+        }
+        
+        // Shoot missile
+        function shootMissile() {
+            missiles.push({
+                x: 80 + cameraX + JET_WIDTH,
+                y: jetY + JET_HEIGHT / 2
+            });
+        }
+        
         // Update NYC enemies (harder AI with disc shooting)
         function updateNYCEnemies() {
             const playerCenterX = player.x + player.width / 2;
@@ -1473,9 +2050,9 @@ game_html = """
             }
         }
         
-        // Draw health bar (Level 2 only)
+        // Draw health bar (Level 2 and 3)
         function drawHealthBar() {
-            if (currentLevel !== 2) return;
+            if (currentLevel < 2) return;
             
             const barWidth = 150;
             const barHeight = 12;
@@ -1893,8 +2470,8 @@ game_html = """
             ctx.fillText(`${score + totalScore} / ${coins.length}`, 50, 32);
             
             // Level indicator
-            const levelText = currentLevel === 1 ? 'THE GRID' : 'NYC';
-            const levelColor = currentLevel === 1 ? '#00FFFF' : '#FFD700';
+            const levelText = currentLevel === 1 ? 'THE GRID' : (currentLevel === 2 ? 'NYC' : 'SPACE');
+            const levelColor = currentLevel === 1 ? '#00FFFF' : (currentLevel === 2 ? '#FFD700' : '#00FFAA');
             ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
             ctx.fillRect(canvas.width - 120, 12, 105, 30);
             ctx.strokeStyle = levelColor;
@@ -1906,14 +2483,14 @@ game_html = """
             ctx.fillText(`LVL ${currentLevel}: ${levelText}`, canvas.width - 115, 32);
             ctx.shadowBlur = 0;
             
-            // Disc indicator (Level 2 only)
-            if (currentLevel === 2) {
+            // Weapon indicator (Level 2: Disc, Level 3: Missile)
+            if (currentLevel >= 2) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-                ctx.fillRect(15, 48, 85, 22);
-                const discColor = disc.active ? '#555' : characters[selectedCharacter].circuitColor;
-                ctx.fillStyle = discColor;
+                ctx.fillRect(15, 48, 95, 22);
+                const weaponColor = characters[selectedCharacter].circuitColor;
+                ctx.fillStyle = currentLevel === 2 && disc.active ? '#555' : weaponColor;
                 ctx.font = '12px "Courier New", monospace';
-                ctx.fillText('[X] DISC', 22, 63);
+                ctx.fillText(currentLevel === 2 ? '[X] DISC' : '[X] MISSILE', 22, 63);
             }
         }
 
@@ -2088,6 +2665,14 @@ game_html = """
                 invincibilityTimer--;
             }
             
+            // Level 3 - Space shooter mode
+            if (currentLevel === 3) {
+                updateJet();
+                updateMissiles();
+                updateSpaceDrones();
+                return; // Skip platformer updates
+            }
+            
             updatePlayer();
             updateCoins();
             updateEnemies();
@@ -2132,6 +2717,44 @@ game_html = """
             if (gameState === 'transition') {
                 updateTransition();
                 drawSky();
+                drawTransition();
+                return;
+            }
+            
+            // Level 3 - Space Shooter drawing
+            if (currentLevel === 3) {
+                drawSpaceBackground();
+                
+                // Draw space elements (with camera offset for scrolling)
+                ctx.save();
+                ctx.translate(-cameraX, 0);
+                
+                // Draw missiles
+                missiles.forEach(drawMissile);
+                
+                // Draw drones
+                spaceDrones.forEach(drawSpaceDrone);
+                
+                // Draw drone projectiles
+                droneProjectiles.forEach(drawDroneProjectile);
+                
+                // Draw portal at end
+                drawSpacePortal();
+                
+                ctx.restore();
+                
+                // Draw jet (fixed position on screen)
+                // Flash when invincible
+                if (invincibilityTimer <= 0 || Math.floor(invincibilityTimer / 5) % 2 === 1) {
+                    drawJet();
+                }
+                
+                // UI
+                drawUI();
+                drawHealthBar();
+                
+                // Draw progress bar
+                drawProgressBar();
                 drawTransition();
                 return;
             }
@@ -2640,7 +3263,9 @@ game_html = """
 
         // Draw level progress bar - TRON style
         function drawProgressBar() {
-            const progress = player.x / WORLD_WIDTH;
+            // Level 3 uses camera position for progress
+            const worldWidth = currentLevel === 3 ? 3500 : WORLD_WIDTH;
+            const progress = currentLevel === 3 ? cameraX / worldWidth : player.x / worldWidth;
             const barWidth = 200;
             const barHeight = 6;
             const barX = canvas.width - barWidth - 20;
@@ -2733,9 +3358,13 @@ game_html = """
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') keys.jump = true;
             
-            // Throw disc with X or K (Level 2 only)
-            if ((e.key === 'x' || e.key === 'X' || e.key === 'k' || e.key === 'K') && gameState === 'playing' && currentLevel === 2) {
-                throwDisc();
+            // Throw disc (Level 2) or shoot missile (Level 3)
+            if ((e.key === 'x' || e.key === 'X' || e.key === 'k' || e.key === 'K') && gameState === 'playing') {
+                if (currentLevel === 2) {
+                    throwDisc();
+                } else if (currentLevel === 3) {
+                    shootMissile();
+                }
             }
             
             if ((e.key === 'r' || e.key === 'R') && (gameState === 'won' || gameState === 'lost')) {
@@ -2776,26 +3405,42 @@ game_html = """
         // Reset game (keep the player name)
         function resetGame() {
             // Restart at current checkpoint level
-            player.x = 50;
-            player.y = 350;
-            player.velX = 0;
-            player.velY = 0;
-            player.onGround = false;
-            player.facingRight = true;
             score = 0;
             disc.active = false;
             gameState = 'playing';
             cameraX = 0;
             
-            // Reset health and enemy discs for Level 2
-            if (currentLevel === 2) {
+            // Reset health for Level 2 and 3
+            if (currentLevel >= 2) {
                 playerHealth = MAX_HEALTH;
             }
             invincibilityTimer = 0;
             enemyDiscs = [];
+            missiles = [];
+            droneProjectiles = [];
+            
+            if (currentLevel === 3) {
+                // Space shooter mode reset
+                jetY = canvas.height / 2 - JET_HEIGHT / 2;
+                jetVelY = 0;
+                player.width = JET_WIDTH;
+                player.height = JET_HEIGHT;
+                initSpaceDrones();
+                initStars();
+            } else {
+                // Platformer mode reset
+                player.x = 50;
+                player.y = 350;
+                player.velX = 0;
+                player.velY = 0;
+                player.onGround = false;
+                player.facingRight = true;
+                player.width = 36;
+                player.height = 48;
+                loadLevelPlatforms();
+            }
             
             // Keep totalScore from previous levels
-            loadLevelPlatforms();
             initCoins();
             initEnemies();
             overlay.style.display = 'none';
@@ -2876,9 +3521,13 @@ game_html = """
                 }
             }
             
-            // Throw disc on click during gameplay (Level 2 only)
-            if (gameState === 'playing' && currentLevel === 2) {
-                throwDisc();
+            // Throw disc (Level 2) or shoot missile (Level 3) on click
+            if (gameState === 'playing') {
+                if (currentLevel === 2) {
+                    throwDisc();
+                } else if (currentLevel === 3) {
+                    shootMissile();
+                }
             }
             
             canvas.focus();
@@ -2914,7 +3563,7 @@ with col1:
 with col2:
     st.markdown("🔺 **Throw** your identity disc!")
 with col3:
-    st.markdown("🏙️ **2 Levels**: The Grid → NYC!")
+    st.markdown("🚀 **3 Levels**: Grid → NYC → Space!")
 with col4:
     st.markdown("🚪 **Reach** the portal!")
 
