@@ -195,8 +195,36 @@ game_html = """
         const WORLD_WIDTH = 3000;
         let cameraX = 0;
 
-        // Colors - TRON aesthetic
-        const COLORS = {
+        // Colors - TRON aesthetic (Level 1)
+        const COLORS_L1 = {
+            skyTop: '#000000',
+            skyBottom: '#0a0a1a',
+            ground: '#0a0a0a',
+            grass: '#00FFFF',
+            platform: '#111111',
+            platformTop: '#00FFFF',
+            neonCyan: '#00FFFF',
+            neonOrange: '#FF6600',
+            neonRed: '#FF0044',
+            gridLine: 'rgba(0, 255, 255, 0.15)'
+        };
+        
+        // Colors - NYC Dimension (Level 2)
+        const COLORS_L2 = {
+            skyTop: '#1a1a2e',
+            skyBottom: '#2d132c',
+            ground: '#1a1a1a',
+            grass: '#FFD700',
+            platform: '#2a2a2a',
+            platformTop: '#FFD700',
+            neonCyan: '#FFD700',
+            neonOrange: '#FF4500',
+            neonRed: '#FF1744',
+            gridLine: 'rgba(255, 215, 0, 0.1)'
+        };
+        
+        // Current colors (changes based on level)
+        let COLORS = {
             skyTop: '#000000',
             skyBottom: '#0a0a1a',
             ground: '#0a0a0a',
@@ -220,14 +248,50 @@ game_html = """
             neonWhite: '#FFFFFF',
             neonPurple: '#AA00FF'
         };
+        
+        // Update colors based on level
+        function updateLevelColors() {
+            if (currentLevel === 1) {
+                COLORS.skyTop = COLORS_L1.skyTop;
+                COLORS.skyBottom = COLORS_L1.skyBottom;
+                COLORS.ground = COLORS_L1.ground;
+                COLORS.grass = COLORS_L1.grass;
+                COLORS.platform = COLORS_L1.platform;
+                COLORS.platformTop = COLORS_L1.platformTop;
+                COLORS.gridLine = COLORS_L1.gridLine;
+            } else {
+                COLORS.skyTop = COLORS_L2.skyTop;
+                COLORS.skyBottom = COLORS_L2.skyBottom;
+                COLORS.ground = COLORS_L2.ground;
+                COLORS.grass = COLORS_L2.grass;
+                COLORS.platform = COLORS_L2.platform;
+                COLORS.platformTop = COLORS_L2.platformTop;
+                COLORS.gridLine = COLORS_L2.gridLine;
+            }
+        }
 
         // Game state
-        let gameState = 'title'; // 'title', 'character', 'playing', 'won', 'lost'
+        let gameState = 'title'; // 'title', 'character', 'playing', 'won', 'lost', 'transition'
         let score = 0;
         let animationFrame = 0;
         let playerName = '';
         let nameInputActive = false;
         let selectedCharacter = 0;
+        let currentLevel = 1;
+        let totalScore = 0; // Accumulated score across levels
+        
+        // Identity Disc weapon
+        let disc = {
+            active: false,
+            x: 0,
+            y: 0,
+            velX: 0,
+            velY: 0,
+            returning: false,
+            rotation: 0
+        };
+        const DISC_SPEED = 12;
+        const DISC_SIZE = 15;
         
         // Available characters - TRON inspired programs
         const characters = [
@@ -318,146 +382,205 @@ game_html = """
             animTimer: 0
         };
 
-        // Platforms - Extended scrollable level
-        const platforms = [
-            // Section 1: Starting area
+        // Platforms - Dynamic based on level
+        let platforms = [];
+        
+        // Level 1 platforms (The Grid)
+        const platforms_L1 = [
             { x: 0, y: 450, width: 400, height: 50, isGround: true },
             { x: 180, y: 370, width: 100, height: 25, isGround: false },
             { x: 350, y: 310, width: 90, height: 25, isGround: false },
-            
-            // Section 2: First gap
             { x: 500, y: 450, width: 200, height: 50, isGround: true },
             { x: 550, y: 350, width: 100, height: 25, isGround: false },
             { x: 450, y: 250, width: 90, height: 25, isGround: false },
-            
-            // Section 3: Platforming challenge
             { x: 800, y: 450, width: 150, height: 50, isGround: true },
             { x: 750, y: 350, width: 80, height: 25, isGround: false },
             { x: 880, y: 280, width: 100, height: 25, isGround: false },
             { x: 1000, y: 350, width: 80, height: 25, isGround: false },
-            
-            // Section 4: Mid level
             { x: 1050, y: 450, width: 250, height: 50, isGround: true },
             { x: 1100, y: 350, width: 100, height: 25, isGround: false },
             { x: 1250, y: 280, width: 90, height: 25, isGround: false },
-            
-            // Section 5: Tricky jumps
             { x: 1400, y: 450, width: 120, height: 50, isGround: true },
             { x: 1380, y: 350, width: 80, height: 25, isGround: false },
             { x: 1500, y: 380, width: 70, height: 25, isGround: false },
             { x: 1600, y: 320, width: 80, height: 25, isGround: false },
-            
-            // Section 6: More platforms
             { x: 1700, y: 450, width: 200, height: 50, isGround: true },
             { x: 1750, y: 350, width: 100, height: 25, isGround: false },
             { x: 1650, y: 250, width: 90, height: 25, isGround: false },
             { x: 1850, y: 280, width: 100, height: 25, isGround: false },
-            
-            // Section 7: Near the end
             { x: 2000, y: 450, width: 150, height: 50, isGround: true },
             { x: 2050, y: 350, width: 80, height: 25, isGround: false },
             { x: 2180, y: 400, width: 100, height: 25, isGround: false },
-            
-            // Section 8: Final stretch
             { x: 2300, y: 450, width: 200, height: 50, isGround: true },
             { x: 2350, y: 350, width: 100, height: 25, isGround: false },
             { x: 2500, y: 300, width: 90, height: 25, isGround: false },
-            
-            // Final platform with flag
             { x: 2650, y: 450, width: 350, height: 50, isGround: true },
         ];
-
-        // Coins - Spread across the extended level
-        let coins = [];
-        function initCoins() {
-            coins = [
-                // Section 1
-                { x: 200, y: 330, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 250, y: 330, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 375, y: 270, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                // Section 2
-                { x: 580, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 475, y: 210, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                // Section 3
-                { x: 780, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 910, y: 240, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                // Section 4
-                { x: 1130, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 1280, y: 240, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                // Section 5
-                { x: 1410, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 1530, y: 340, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 1630, y: 280, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                // Section 6
-                { x: 1780, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 1680, y: 210, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 1880, y: 240, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                // Section 7
-                { x: 2080, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 2210, y: 360, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                // Section 8
-                { x: 2380, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                { x: 2530, y: 260, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-                // Final area
-                { x: 2750, y: 410, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
-            ];
+        
+        // Level 2 platforms (NYC Streets) - Rooftops and fire escapes
+        const platforms_L2 = [
+            // Starting rooftop
+            { x: 0, y: 450, width: 300, height: 50, isGround: true },
+            { x: 150, y: 380, width: 60, height: 15, isGround: false },
+            // Gap with fire escape
+            { x: 380, y: 420, width: 50, height: 15, isGround: false },
+            { x: 450, y: 380, width: 50, height: 15, isGround: false },
+            { x: 520, y: 340, width: 50, height: 15, isGround: false },
+            // Building 2
+            { x: 600, y: 450, width: 200, height: 50, isGround: true },
+            { x: 650, y: 370, width: 80, height: 20, isGround: false },
+            { x: 750, y: 300, width: 80, height: 20, isGround: false },
+            // Crane section
+            { x: 900, y: 380, width: 40, height: 15, isGround: false },
+            { x: 970, y: 350, width: 40, height: 15, isGround: false },
+            { x: 1040, y: 320, width: 40, height: 15, isGround: false },
+            // Building 3
+            { x: 1120, y: 450, width: 180, height: 50, isGround: true },
+            { x: 1150, y: 380, width: 60, height: 15, isGround: false },
+            { x: 1220, y: 320, width: 60, height: 15, isGround: false },
+            // Water tower section
+            { x: 1350, y: 400, width: 60, height: 15, isGround: false },
+            { x: 1430, y: 360, width: 60, height: 15, isGround: false },
+            { x: 1510, y: 320, width: 60, height: 15, isGround: false },
+            // Building 4
+            { x: 1600, y: 450, width: 200, height: 50, isGround: true },
+            { x: 1680, y: 370, width: 80, height: 20, isGround: false },
+            // Billboard section
+            { x: 1850, y: 380, width: 100, height: 20, isGround: false },
+            { x: 1980, y: 340, width: 80, height: 15, isGround: false },
+            // Building 5 - Times Square
+            { x: 2100, y: 450, width: 250, height: 50, isGround: true },
+            { x: 2150, y: 380, width: 60, height: 15, isGround: false },
+            { x: 2250, y: 320, width: 60, height: 15, isGround: false },
+            // Final stretch
+            { x: 2400, y: 400, width: 50, height: 15, isGround: false },
+            { x: 2480, y: 360, width: 50, height: 15, isGround: false },
+            { x: 2560, y: 320, width: 50, height: 15, isGround: false },
+            // Final rooftop
+            { x: 2650, y: 450, width: 350, height: 50, isGround: true },
+        ];
+        
+        function loadLevelPlatforms() {
+            platforms = currentLevel === 1 ? [...platforms_L1] : [...platforms_L2];
         }
 
-        // Enemies - Red demons and green Koopa turtles
+        // Coins - Dynamic based on level
+        let coins = [];
+        
+        function initCoins() {
+            if (currentLevel === 1) {
+                coins = [
+                    { x: 200, y: 330, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 250, y: 330, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 375, y: 270, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 580, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 475, y: 210, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 780, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 910, y: 240, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1130, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1280, y: 240, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1410, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1530, y: 340, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1630, y: 280, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1780, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1680, y: 210, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1880, y: 240, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2080, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2210, y: 360, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2380, y: 310, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2530, y: 260, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2750, y: 410, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                ];
+            } else {
+                // Level 2 coins - NYC rooftops
+                coins = [
+                    { x: 100, y: 410, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 170, y: 340, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 400, y: 380, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 540, y: 300, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 680, y: 330, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 780, y: 260, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 920, y: 340, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1060, y: 280, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1180, y: 340, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1240, y: 280, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1380, y: 360, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1530, y: 280, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1700, y: 330, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 1880, y: 340, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2000, y: 300, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2180, y: 340, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2280, y: 280, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2500, y: 320, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2580, y: 280, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                    { x: 2750, y: 410, collected: false, frame: 0, offset: Math.random() * Math.PI * 2 },
+                ];
+            }
+        }
+
+        // Enemies - Dynamic based on level
         let enemies = [];
         let turtles = [];
+        let nycEnemies = []; // NYC specific harder enemies
         
         function initEnemies() {
-            // Red demon monsters
-            enemies = [
-                // Section 1
-                { x: 100, y: 412, width: 38, height: 38, patrolLeft: 50, patrolRight: 350, direction: 1, animFrame: 0 },
-                // Section 2
-                { x: 550, y: 412, width: 38, height: 38, patrolLeft: 500, patrolRight: 680, direction: 1, animFrame: 0 },
-                // Section 3
-                { x: 850, y: 412, width: 38, height: 38, patrolLeft: 800, patrolRight: 930, direction: 1, animFrame: 0 },
-                // Section 4
-                { x: 1100, y: 412, width: 38, height: 38, patrolLeft: 1050, patrolRight: 1280, direction: 1, animFrame: 0 },
-                // Section 5
-                { x: 1420, y: 412, width: 38, height: 38, patrolLeft: 1400, patrolRight: 1500, direction: 1, animFrame: 0 },
-                // Section 6
-                { x: 1750, y: 412, width: 38, height: 38, patrolLeft: 1700, patrolRight: 1880, direction: 1, animFrame: 0 },
-                // Section 7
-                { x: 2050, y: 412, width: 38, height: 38, patrolLeft: 2000, patrolRight: 2130, direction: 1, animFrame: 0 },
-                // Final area
-                { x: 2700, y: 412, width: 38, height: 38, patrolLeft: 2650, patrolRight: 2850, direction: 1, animFrame: 0 },
-            ];
-            
-            // Green Koopa turtles
-            turtles = [
-                // Section 1
-                { x: 280, y: 410, width: 40, height: 40, patrolLeft: 50, patrolRight: 350, direction: -1, animFrame: 0, inShell: false },
-                // Section 2
-                { x: 620, y: 410, width: 40, height: 40, patrolLeft: 500, patrolRight: 680, direction: -1, animFrame: 0, inShell: false },
-                // Section 3
-                { x: 910, y: 240, width: 40, height: 40, patrolLeft: 880, patrolRight: 960, direction: -1, animFrame: 0, inShell: false },
-                // Section 4
-                { x: 1200, y: 410, width: 40, height: 40, patrolLeft: 1050, patrolRight: 1280, direction: -1, animFrame: 0, inShell: false },
-                // Section 5
-                { x: 1630, y: 282, width: 40, height: 40, patrolLeft: 1600, patrolRight: 1680, direction: 1, animFrame: 0, inShell: false },
-                // Section 6
-                { x: 1880, y: 240, width: 40, height: 40, patrolLeft: 1850, patrolRight: 1930, direction: -1, animFrame: 0, inShell: false },
-                // Section 7
-                { x: 2210, y: 360, width: 40, height: 40, patrolLeft: 2180, patrolRight: 2260, direction: 1, animFrame: 0, inShell: false },
-                // Section 8
-                { x: 2400, y: 410, width: 40, height: 40, patrolLeft: 2300, patrolRight: 2480, direction: -1, animFrame: 0, inShell: false },
-                // Final area
-                { x: 2800, y: 410, width: 40, height: 40, patrolLeft: 2650, patrolRight: 2950, direction: -1, animFrame: 0, inShell: false },
-            ];
+            if (currentLevel === 1) {
+                // Level 1: Standard enemies
+                enemies = [
+                    { x: 200, y: 412, width: 38, height: 38, patrolLeft: 150, patrolRight: 350, direction: 1, animFrame: 0, health: 1 },
+                    { x: 550, y: 412, width: 38, height: 38, patrolLeft: 500, patrolRight: 680, direction: 1, animFrame: 0, health: 1 },
+                    { x: 850, y: 412, width: 38, height: 38, patrolLeft: 800, patrolRight: 930, direction: 1, animFrame: 0, health: 1 },
+                    { x: 1100, y: 412, width: 38, height: 38, patrolLeft: 1050, patrolRight: 1280, direction: 1, animFrame: 0, health: 1 },
+                    { x: 1420, y: 412, width: 38, height: 38, patrolLeft: 1400, patrolRight: 1500, direction: 1, animFrame: 0, health: 1 },
+                    { x: 1750, y: 412, width: 38, height: 38, patrolLeft: 1700, patrolRight: 1880, direction: 1, animFrame: 0, health: 1 },
+                    { x: 2050, y: 412, width: 38, height: 38, patrolLeft: 2000, patrolRight: 2130, direction: 1, animFrame: 0, health: 1 },
+                    { x: 2700, y: 412, width: 38, height: 38, patrolLeft: 2650, patrolRight: 2850, direction: 1, animFrame: 0, health: 1 },
+                ];
+                turtles = [
+                    { x: 280, y: 410, width: 40, height: 40, patrolLeft: 150, patrolRight: 350, direction: -1, animFrame: 0, inShell: false, health: 1 },
+                    { x: 620, y: 410, width: 40, height: 40, patrolLeft: 500, patrolRight: 680, direction: -1, animFrame: 0, inShell: false, health: 1 },
+                    { x: 910, y: 240, width: 40, height: 40, patrolLeft: 880, patrolRight: 960, direction: -1, animFrame: 0, inShell: false, health: 1 },
+                    { x: 1200, y: 410, width: 40, height: 40, patrolLeft: 1050, patrolRight: 1280, direction: -1, animFrame: 0, inShell: false, health: 1 },
+                    { x: 1630, y: 282, width: 40, height: 40, patrolLeft: 1600, patrolRight: 1680, direction: 1, animFrame: 0, inShell: false, health: 1 },
+                    { x: 1880, y: 240, width: 40, height: 40, patrolLeft: 1850, patrolRight: 1930, direction: -1, animFrame: 0, inShell: false, health: 1 },
+                    { x: 2210, y: 360, width: 40, height: 40, patrolLeft: 2180, patrolRight: 2260, direction: 1, animFrame: 0, inShell: false, health: 1 },
+                    { x: 2400, y: 410, width: 40, height: 40, patrolLeft: 2300, patrolRight: 2480, direction: -1, animFrame: 0, inShell: false, health: 1 },
+                    { x: 2800, y: 410, width: 40, height: 40, patrolLeft: 2650, patrolRight: 2950, direction: -1, animFrame: 0, inShell: false, health: 1 },
+                ];
+                nycEnemies = [];
+            } else {
+                // Level 2: Harder NYC enemies - thugs, drones, jumpers
+                enemies = []; // No basic enemies in L2
+                turtles = []; // No turtles in L2
+                nycEnemies = [
+                    // Thug type - fast, aggressive, requires 2 hits
+                    { x: 200, y: 412, width: 42, height: 45, patrolLeft: 150, patrolRight: 280, direction: 1, type: 'thug', speed: 1.5, health: 2, jumpTimer: 0 },
+                    { x: 650, y: 412, width: 42, height: 45, patrolLeft: 600, patrolRight: 780, direction: -1, type: 'thug', speed: 1.8, health: 2, jumpTimer: 0 },
+                    // Drone type - flies, unpredictable movement
+                    { x: 400, y: 320, width: 35, height: 35, patrolLeft: 350, patrolRight: 550, direction: 1, type: 'drone', speed: 1.2, health: 1, floatOffset: 0 },
+                    { x: 1000, y: 280, width: 35, height: 35, patrolLeft: 900, patrolRight: 1100, direction: -1, type: 'drone', speed: 1.4, health: 1, floatOffset: Math.PI },
+                    { x: 1900, y: 300, width: 35, height: 35, patrolLeft: 1830, patrolRight: 2020, direction: 1, type: 'drone', speed: 1.3, health: 1, floatOffset: Math.PI/2 },
+                    // Jumper type - jumps at player, hard to dodge
+                    { x: 1200, y: 412, width: 40, height: 40, patrolLeft: 1120, patrolRight: 1280, direction: 1, type: 'jumper', speed: 1.0, health: 1, velY: 0, onGround: true, jumpCooldown: 0 },
+                    { x: 1700, y: 412, width: 40, height: 40, patrolLeft: 1600, patrolRight: 1780, direction: -1, type: 'jumper', speed: 1.2, health: 1, velY: 0, onGround: true, jumpCooldown: 0 },
+                    { x: 2200, y: 412, width: 40, height: 40, patrolLeft: 2100, patrolRight: 2330, direction: 1, type: 'jumper', speed: 1.1, health: 1, velY: 0, onGround: true, jumpCooldown: 0 },
+                    // Boss thug at the end
+                    { x: 2750, y: 405, width: 50, height: 55, patrolLeft: 2680, patrolRight: 2920, direction: 1, type: 'boss', speed: 0.8, health: 4, jumpTimer: 0 },
+                ];
+            }
         }
 
-        // Flag - At the end of the extended level
-        const flag = {
+        // Portal - At the end of each level
+        let portal = {
             x: 2920,
             y: 300,
             poleHeight: 150,
             animTimer: 0
         };
+        
+        // Transition effect
+        let transitionAlpha = 0;
+        let transitionDirection = 0; // 0 = none, 1 = fading out, -1 = fading in
 
         // Clouds
         const clouds = [
@@ -477,13 +600,84 @@ game_html = """
             player.onGround = false;
             player.facingRight = true;
             score = 0;
-            gameState = 'title';  // Start at title screen
+            totalScore = 0;
+            currentLevel = 1;
+            gameState = 'title';
             cameraX = 0;
             playerName = '';
             nameInputActive = false;
+            disc.active = false;
+            transitionAlpha = 0;
+            transitionDirection = 0;
+            loadLevel(1);
+            overlay.style.display = 'none';
+        }
+        
+        // Load a specific level
+        function loadLevel(levelNum) {
+            currentLevel = levelNum;
+            player.x = 50;
+            player.y = 350;
+            player.velX = 0;
+            player.velY = 0;
+            player.onGround = false;
+            cameraX = 0;
+            disc.active = false;
+            updateLevelColors();
+            loadLevelPlatforms();
             initCoins();
             initEnemies();
-            overlay.style.display = 'none';
+        }
+        
+        // Transition to next level
+        function goToNextLevel() {
+            totalScore += score;
+            score = 0;
+            
+            if (currentLevel === 1) {
+                // Go to Level 2 (NYC)
+                gameState = 'transition';
+                transitionDirection = 1; // Fade out
+            } else {
+                // Won the game!
+                gameWon();
+            }
+        }
+        
+        // Handle transition animation
+        function updateTransition() {
+            if (transitionDirection === 1) {
+                transitionAlpha += 0.02;
+                if (transitionAlpha >= 1) {
+                    loadLevel(2);
+                    transitionDirection = -1; // Start fade in
+                }
+            } else if (transitionDirection === -1) {
+                transitionAlpha -= 0.02;
+                if (transitionAlpha <= 0) {
+                    transitionAlpha = 0;
+                    transitionDirection = 0;
+                    gameState = 'playing';
+                }
+            }
+        }
+        
+        // Draw transition effect
+        function drawTransition() {
+            if (transitionAlpha > 0) {
+                ctx.fillStyle = `rgba(0, 0, 0, ${transitionAlpha})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                if (transitionDirection === 1 && transitionAlpha > 0.5) {
+                    ctx.fillStyle = `rgba(255, 215, 0, ${(transitionAlpha - 0.5) * 2})`;
+                    ctx.font = 'bold 36px "Courier New", monospace';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('ENTERING NYC DIMENSION', canvas.width / 2, canvas.height / 2);
+                    ctx.font = '18px "Courier New", monospace';
+                    ctx.fillText('[ CHECKPOINT SAVED ]', canvas.width / 2, canvas.height / 2 + 40);
+                    ctx.textAlign = 'left';
+                }
+            }
         }
 
         // Draw TRON grid background
@@ -566,44 +760,77 @@ game_html = """
 
         // Draw platform - TRON style
         function drawPlatform(p) {
-            // Dark platform body
-            ctx.fillStyle = '#0a0a0a';
-            ctx.fillRect(p.x, p.y, p.width, p.height);
-            
-            // Glowing top edge
-            ctx.shadowColor = COLORS.neonCyan;
-            ctx.shadowBlur = 10;
-            ctx.fillStyle = COLORS.neonCyan;
-            ctx.fillRect(p.x, p.y, p.width, 3);
-            ctx.shadowBlur = 0;
-            
-            // Circuit pattern on platform
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
-            ctx.lineWidth = 1;
-            
-            // Horizontal circuit lines
-            for (let y = p.y + 8; y < p.y + p.height - 4; y += 8) {
+            if (currentLevel === 1) {
+                // Level 1: TRON Grid style
+                ctx.fillStyle = '#0a0a0a';
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+                
+                ctx.shadowColor = COLORS.grass;
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = COLORS.grass;
+                ctx.fillRect(p.x, p.y, p.width, 3);
+                ctx.shadowBlur = 0;
+                
+                ctx.strokeStyle = `${COLORS.grass}50`;
+                ctx.lineWidth = 1;
+                
+                for (let y = p.y + 8; y < p.y + p.height - 4; y += 8) {
+                    ctx.beginPath();
+                    ctx.moveTo(p.x + 4, y);
+                    ctx.lineTo(p.x + p.width - 4, y);
+                    ctx.stroke();
+                }
+                
+                ctx.strokeStyle = `${COLORS.grass}80`;
                 ctx.beginPath();
-                ctx.moveTo(p.x + 4, y);
-                ctx.lineTo(p.x + p.width - 4, y);
+                ctx.moveTo(p.x + 2, p.y + 3);
+                ctx.lineTo(p.x + 2, p.y + p.height);
                 ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(p.x + p.width - 2, p.y + 3);
+                ctx.lineTo(p.x + p.width - 2, p.y + p.height);
+                ctx.stroke();
+                
+                ctx.fillStyle = COLORS.grass;
+                ctx.fillRect(p.x, p.y + p.height - 2, 6, 2);
+                ctx.fillRect(p.x + p.width - 6, p.y + p.height - 2, 6, 2);
+            } else {
+                // Level 2: NYC Rooftop/Fire escape style
+                // Building/rooftop base
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+                
+                // Darker top edge (rooftop ledge)
+                ctx.fillStyle = '#2a2a2a';
+                ctx.fillRect(p.x, p.y, p.width, 4);
+                
+                // Yellow safety stripe on edge (fire escape/rooftop style)
+                ctx.shadowColor = '#FFD700';
+                ctx.shadowBlur = 5;
+                ctx.fillStyle = '#FFD700';
+                ctx.fillRect(p.x, p.y, p.width, 2);
+                ctx.shadowBlur = 0;
+                
+                // Brick/metal texture
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.15)';
+                ctx.lineWidth = 1;
+                for (let brickY = p.y + 8; brickY < p.y + p.height - 4; brickY += 10) {
+                    for (let brickX = p.x + 3; brickX < p.x + p.width - 6; brickX += 20) {
+                        ctx.strokeRect(brickX, brickY, 16, 8);
+                    }
+                }
+                
+                // Graffiti accent (random position)
+                if (p.width > 80) {
+                    ctx.fillStyle = 'rgba(255, 69, 0, 0.4)';
+                    ctx.fillRect(p.x + 20, p.y + 15, 30, 3);
+                }
+                
+                // Metal bolts at corners
+                ctx.fillStyle = '#444';
+                ctx.fillRect(p.x + 4, p.y + 6, 4, 4);
+                ctx.fillRect(p.x + p.width - 8, p.y + 6, 4, 4);
             }
-            
-            // Vertical accent lines at edges
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
-            ctx.beginPath();
-            ctx.moveTo(p.x + 2, p.y + 3);
-            ctx.lineTo(p.x + 2, p.y + p.height);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(p.x + p.width - 2, p.y + 3);
-            ctx.lineTo(p.x + p.width - 2, p.y + p.height);
-            ctx.stroke();
-            
-            // Corner accents
-            ctx.fillStyle = COLORS.neonCyan;
-            ctx.fillRect(p.x, p.y + p.height - 2, 6, 2);
-            ctx.fillRect(p.x + p.width - 6, p.y + p.height - 2, 6, 2);
         }
 
         // Draw player - TRON 8-bit style with circuit patterns
@@ -787,6 +1014,388 @@ game_html = """
             const G = Math.max(0, Math.min(255, (num >> 8 & 0x00FF) + amt));
             const B = Math.max(0, Math.min(255, (num & 0x0000FF) + amt));
             return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
+        }
+        
+        // Draw triangular identity disc
+        function drawDisc() {
+            if (!disc.active) return;
+            
+            const char = characters[selectedCharacter];
+            const discColor = char.circuitColor || '#00FFFF';
+            
+            ctx.save();
+            ctx.translate(disc.x, disc.y);
+            ctx.rotate(disc.rotation);
+            
+            // Glow
+            ctx.shadowColor = discColor;
+            ctx.shadowBlur = 15;
+            
+            // Triangular disc shape
+            ctx.fillStyle = discColor;
+            ctx.beginPath();
+            ctx.moveTo(0, -DISC_SIZE);
+            ctx.lineTo(DISC_SIZE * 0.866, DISC_SIZE * 0.5);
+            ctx.lineTo(-DISC_SIZE * 0.866, DISC_SIZE * 0.5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Inner triangle (darker)
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.moveTo(0, -DISC_SIZE * 0.5);
+            ctx.lineTo(DISC_SIZE * 0.433, DISC_SIZE * 0.25);
+            ctx.lineTo(-DISC_SIZE * 0.433, DISC_SIZE * 0.25);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Center energy core
+            ctx.fillStyle = discColor;
+            ctx.beginPath();
+            ctx.arc(0, 0, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+        
+        // Throw disc
+        function throwDisc() {
+            if (disc.active) return; // Can only throw one at a time
+            
+            disc.active = true;
+            disc.x = player.x + player.width / 2;
+            disc.y = player.y + player.height / 2;
+            disc.velX = player.facingRight ? DISC_SPEED : -DISC_SPEED;
+            disc.velY = 0;
+            disc.returning = false;
+            disc.rotation = 0;
+        }
+        
+        // Update disc
+        function updateDisc() {
+            if (!disc.active) return;
+            
+            disc.rotation += 0.3;
+            
+            if (!disc.returning) {
+                disc.x += disc.velX;
+                
+                // Check if disc should return (max distance or hit wall)
+                const distFromPlayer = Math.abs(disc.x - (player.x + player.width / 2));
+                if (distFromPlayer > 300 || disc.x < cameraX - 50 || disc.x > cameraX + canvas.width + 50) {
+                    disc.returning = true;
+                }
+            } else {
+                // Return to player
+                const targetX = player.x + player.width / 2;
+                const targetY = player.y + player.height / 2;
+                const dx = targetX - disc.x;
+                const dy = targetY - disc.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist < 20) {
+                    disc.active = false;
+                } else {
+                    disc.x += (dx / dist) * DISC_SPEED * 1.2;
+                    disc.y += (dy / dist) * DISC_SPEED * 1.2;
+                }
+            }
+            
+            // Check collision with enemies
+            checkDiscEnemyCollision();
+        }
+        
+        // Check disc collision with enemies
+        function checkDiscEnemyCollision() {
+            const discRect = { x: disc.x - DISC_SIZE, y: disc.y - DISC_SIZE, width: DISC_SIZE * 2, height: DISC_SIZE * 2 };
+            
+            // Check Level 1 enemies
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                if (checkCollision(discRect, enemies[i])) {
+                    enemies[i].health--;
+                    if (enemies[i].health <= 0) {
+                        enemies.splice(i, 1);
+                        score += 10;
+                    }
+                    disc.returning = true;
+                }
+            }
+            
+            // Check turtles
+            for (let i = turtles.length - 1; i >= 0; i--) {
+                if (checkCollision(discRect, turtles[i])) {
+                    turtles[i].health--;
+                    if (turtles[i].health <= 0) {
+                        turtles.splice(i, 1);
+                        score += 15;
+                    }
+                    disc.returning = true;
+                }
+            }
+            
+            // Check NYC enemies (Level 2)
+            for (let i = nycEnemies.length - 1; i >= 0; i--) {
+                if (checkCollision(discRect, nycEnemies[i])) {
+                    nycEnemies[i].health--;
+                    if (nycEnemies[i].health <= 0) {
+                        const bonus = nycEnemies[i].type === 'boss' ? 100 : 25;
+                        score += bonus;
+                        nycEnemies.splice(i, 1);
+                    }
+                    disc.returning = true;
+                }
+            }
+        }
+        
+        // Draw NYC enemy types
+        function drawNYCEnemy(enemy) {
+            const { x, y, width, height, type, direction, health } = enemy;
+            const bounce = Math.sin(Date.now() / 150) * 2;
+            
+            // Ground glow
+            ctx.shadowColor = '#FF1744';
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = 'rgba(255, 23, 68, 0.4)';
+            ctx.beginPath();
+            ctx.ellipse(x + width/2, y + height + 2, width/2, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            if (type === 'thug' || type === 'boss') {
+                // Thug/Boss - humanoid shape with glowing eyes
+                const scale = type === 'boss' ? 1.2 : 1;
+                
+                ctx.fillStyle = '#1a1a1a';
+                // Body
+                ctx.fillRect(x + 5 * scale, y + 15 * scale, width - 10 * scale, height - 20 * scale);
+                // Head
+                ctx.fillRect(x + 10 * scale, y, width - 20 * scale, 18 * scale);
+                // Legs
+                ctx.fillRect(x + 8 * scale, y + height - 12, 8, 12);
+                ctx.fillRect(x + width - 16 * scale, y + height - 12, 8, 12);
+                
+                // Red circuits
+                ctx.strokeStyle = '#FF1744';
+                ctx.shadowColor = '#FF1744';
+                ctx.shadowBlur = 8;
+                ctx.lineWidth = 2;
+                
+                // Eyes
+                ctx.fillStyle = '#FF1744';
+                ctx.fillRect(x + 14 * scale, y + 6, 4, 4);
+                ctx.fillRect(x + width - 18 * scale, y + 6, 4, 4);
+                
+                // Body circuits
+                ctx.beginPath();
+                ctx.moveTo(x + width/2, y + 15 * scale);
+                ctx.lineTo(x + width/2, y + height - 15);
+                ctx.stroke();
+                
+                // Health indicator for boss
+                if (type === 'boss' && health > 1) {
+                    ctx.fillStyle = '#FF1744';
+                    for (let i = 0; i < health; i++) {
+                        ctx.fillRect(x + 10 + i * 12, y - 10, 10, 6);
+                    }
+                }
+                ctx.shadowBlur = 0;
+                
+            } else if (type === 'drone') {
+                // Drone - floating, circular with propellers
+                const floatY = y + Math.sin(Date.now() / 100 + enemy.floatOffset) * 8;
+                
+                ctx.fillStyle = '#1a1a1a';
+                ctx.beginPath();
+                ctx.ellipse(x + width/2, floatY + height/2, width/2, height/3, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Propeller arms
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x, floatY + height/2);
+                ctx.lineTo(x + width, floatY + height/2);
+                ctx.stroke();
+                
+                // Red scanner
+                ctx.shadowColor = '#FF1744';
+                ctx.shadowBlur = 12;
+                ctx.fillStyle = '#FF1744';
+                ctx.beginPath();
+                ctx.arc(x + width/2, floatY + height/2, 6, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Spinning propellers
+                const propAngle = Date.now() / 50;
+                ctx.strokeStyle = '#FF1744';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 4; i++) {
+                    const angle = propAngle + (i * Math.PI / 2);
+                    const px = x + width/2 + Math.cos(angle) * 18;
+                    const py = floatY + height/2;
+                    ctx.beginPath();
+                    ctx.arc(px, py, 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.shadowBlur = 0;
+                
+            } else if (type === 'jumper') {
+                // Jumper - compact, spring-like
+                const squash = enemy.onGround ? 1 : 0.8;
+                
+                ctx.fillStyle = '#1a1a1a';
+                ctx.fillRect(x + 5, y + 10 * squash, width - 10, (height - 10) * squash);
+                
+                // Spring legs
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(x + 10, y + height - 5);
+                ctx.quadraticCurveTo(x + 5, y + height + 5, x + 10, y + height);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + width - 10, y + height - 5);
+                ctx.quadraticCurveTo(x + width - 5, y + height + 5, x + width - 10, y + height);
+                ctx.stroke();
+                
+                // Angry eyes
+                ctx.shadowColor = '#FF1744';
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = '#FF1744';
+                ctx.fillRect(x + 10, y + 15 * squash, 6, 6);
+                ctx.fillRect(x + width - 16, y + 15 * squash, 6, 6);
+                ctx.shadowBlur = 0;
+            }
+        }
+        
+        // Update NYC enemies (harder AI)
+        function updateNYCEnemies() {
+            const playerCenterX = player.x + player.width / 2;
+            const playerCenterY = player.y + player.height / 2;
+            
+            nycEnemies.forEach(enemy => {
+                const distToPlayer = Math.abs(enemy.x + enemy.width/2 - playerCenterX);
+                
+                if (enemy.type === 'thug' || enemy.type === 'boss') {
+                    // Aggressive patrolling, speeds up when player is near
+                    const speedMult = distToPlayer < 200 ? 1.8 : 1.0;
+                    enemy.x += enemy.speed * enemy.direction * speedMult;
+                    
+                    if (enemy.x <= enemy.patrolLeft) enemy.direction = 1;
+                    if (enemy.x + enemy.width >= enemy.patrolRight) enemy.direction = -1;
+                    
+                } else if (enemy.type === 'drone') {
+                    // Float and move unpredictably
+                    enemy.x += enemy.speed * enemy.direction;
+                    
+                    // Chase player slightly
+                    if (distToPlayer < 150) {
+                        enemy.x += (playerCenterX > enemy.x + enemy.width/2) ? 0.5 : -0.5;
+                    }
+                    
+                    if (enemy.x <= enemy.patrolLeft) enemy.direction = 1;
+                    if (enemy.x + enemy.width >= enemy.patrolRight) enemy.direction = -1;
+                    
+                } else if (enemy.type === 'jumper') {
+                    // Move and jump at player
+                    enemy.x += enemy.speed * enemy.direction;
+                    
+                    if (enemy.x <= enemy.patrolLeft) enemy.direction = 1;
+                    if (enemy.x + enemy.width >= enemy.patrolRight) enemy.direction = -1;
+                    
+                    // Jump when player is close and on cooldown
+                    enemy.jumpCooldown--;
+                    if (distToPlayer < 150 && enemy.onGround && enemy.jumpCooldown <= 0) {
+                        enemy.velY = -12;
+                        enemy.onGround = false;
+                        enemy.jumpCooldown = 90; // 1.5 seconds cooldown
+                    }
+                    
+                    // Apply gravity
+                    if (!enemy.onGround) {
+                        enemy.velY += 0.5;
+                        enemy.y += enemy.velY;
+                        
+                        // Check ground collision
+                        platforms.forEach(p => {
+                            if (enemy.y + enemy.height >= p.y && 
+                                enemy.y + enemy.height <= p.y + 20 &&
+                                enemy.x + enemy.width > p.x && 
+                                enemy.x < p.x + p.width) {
+                                enemy.y = p.y - enemy.height;
+                                enemy.velY = 0;
+                                enemy.onGround = true;
+                            }
+                        });
+                    }
+                }
+                
+                // Check collision with player
+                if (checkCollision(player, enemy)) {
+                    gameOver();
+                }
+            });
+        }
+        
+        // Draw NYC background
+        function drawNYCSky() {
+            // Night sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#0a0a1a');
+            gradient.addColorStop(0.4, '#1a1a2e');
+            gradient.addColorStop(1, '#2d132c');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Stars
+            ctx.fillStyle = '#FFF';
+            for (let i = 0; i < 30; i++) {
+                const starX = (i * 73 + Date.now() / 100) % canvas.width;
+                const starY = (i * 37) % 150;
+                const twinkle = Math.sin(Date.now() / 300 + i) * 0.5 + 0.5;
+                ctx.globalAlpha = twinkle * 0.6;
+                ctx.fillRect(starX, starY, 2, 2);
+            }
+            ctx.globalAlpha = 1;
+        }
+        
+        // Draw NYC buildings background
+        function drawNYCBuildings() {
+            // Far buildings silhouette
+            ctx.fillStyle = '#0f0f1a';
+            for (let x = 0; x < canvas.width; x += 80) {
+                const height = 150 + Math.sin(x * 0.02) * 80;
+                ctx.fillRect(x, canvas.height - height - 50, 70, height);
+                
+                // Windows
+                ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
+                for (let wy = canvas.height - height - 40; wy < canvas.height - 60; wy += 20) {
+                    for (let wx = x + 5; wx < x + 65; wx += 15) {
+                        if (Math.random() > 0.3) {
+                            ctx.fillRect(wx, wy, 8, 12);
+                        }
+                    }
+                }
+                ctx.fillStyle = '#0f0f1a';
+            }
+            
+            // Near buildings
+            ctx.fillStyle = '#1a1a2a';
+            for (let x = 0; x < canvas.width; x += 120) {
+                const height = 80 + Math.sin(x * 0.03 + 1) * 50;
+                ctx.fillRect(x - 20, canvas.height - height - 50, 100, height);
+            }
+            
+            // Billboard glow
+            ctx.shadowColor = '#FFD700';
+            ctx.shadowBlur = 20;
+            ctx.fillStyle = '#FFD700';
+            ctx.fillRect(400, 200, 100, 40);
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText('NYC', 425, 225);
         }
 
         // Draw energy bit (TRON style coin)
@@ -982,7 +1591,7 @@ game_html = """
         
         // Draw exit portal (TRON style)
         function drawFlag() {
-            const { x, y, poleHeight, animTimer } = flag;
+            const { x, y, poleHeight, animTimer } = portal;
             const pulse = 0.6 + Math.sin(animTimer / 8) * 0.4;
             const rotation = animTimer * 0.02;
             
@@ -1107,7 +1716,29 @@ game_html = """
             // Score text
             ctx.fillStyle = COLORS.neonOrange;
             ctx.font = 'bold 16px "Courier New", monospace';
-            ctx.fillText(`${score} / ${coins.length}`, 50, 32);
+            ctx.fillText(`${score + totalScore} / ${coins.length}`, 50, 32);
+            
+            // Level indicator
+            const levelText = currentLevel === 1 ? 'THE GRID' : 'NYC';
+            const levelColor = currentLevel === 1 ? '#00FFFF' : '#FFD700';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(canvas.width - 120, 12, 105, 30);
+            ctx.strokeStyle = levelColor;
+            ctx.strokeRect(canvas.width - 120, 12, 105, 30);
+            ctx.fillStyle = levelColor;
+            ctx.shadowColor = levelColor;
+            ctx.shadowBlur = 8;
+            ctx.font = 'bold 14px "Courier New", monospace';
+            ctx.fillText(`LVL ${currentLevel}: ${levelText}`, canvas.width - 115, 32);
+            ctx.shadowBlur = 0;
+            
+            // Disc indicator
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            ctx.fillRect(15, 48, 85, 22);
+            const discColor = disc.active ? '#555' : characters[selectedCharacter].circuitColor;
+            ctx.fillStyle = discColor;
+            ctx.font = '12px "Courier New", monospace';
+            ctx.fillText('[X] DISC', 22, 63);
         }
 
         // Collision detection
@@ -1241,25 +1872,31 @@ game_html = """
 
         // Check flag
         function checkFlag() {
-            const flagRect = { x: flag.x - 10, y: flag.y, width: 30, height: flag.poleHeight };
-            if (checkCollision(player, flagRect)) {
-                gameWon();
+            const portalRect = { x: portal.x - 10, y: portal.y, width: 60, height: portal.poleHeight };
+            if (checkCollision(player, portalRect)) {
+                goToNextLevel();
             }
         }
 
         // Game over
         function gameOver() {
             gameState = 'lost';
+            const levelName = currentLevel === 1 ? 'THE GRID' : 'NYC';
             overlayTitle.textContent = '⚠ DEREZZED ⚠';
-            overlayScore.textContent = `${playerName.toUpperCase()} collected ${score}/${coins.length} energy bits`;
+            overlayScore.innerHTML = `${playerName.toUpperCase()} was derezzed in ${levelName}<br>
+                <span style="color: #888; font-size: 14px;">Checkpoint: Level ${currentLevel} | Total: ${score + totalScore} bits</span><br>
+                <span style="color: #00FFFF; font-size: 12px;">Press R to restart from checkpoint</span>`;
             overlay.style.display = 'flex';
         }
 
-        // Game won
+        // Game won - both levels complete!
         function gameWon() {
+            const finalScore = score + totalScore;
             gameState = 'won';
-            overlayTitle.textContent = '⚡ EXIT REACHED ⚡';
-            overlayScore.textContent = `${playerName.toUpperCase()} collected ${score}/${coins.length} energy bits!`;
+            overlayTitle.textContent = '⚡ MISSION COMPLETE ⚡';
+            overlayScore.innerHTML = `${playerName.toUpperCase()} escaped both dimensions!<br>
+                <span style="color: #FFD700; font-size: 18px;">TOTAL SCORE: ${finalScore} energy bits</span><br>
+                <span style="color: #00FFFF; font-size: 12px;">Press R to play again</span>`;
             overlay.style.display = 'flex';
         }
 
@@ -1268,18 +1905,27 @@ game_html = """
             if (gameState !== 'playing') return;
             
             animationFrame++;
-            flag.animTimer++;
+            portal.animTimer++;
             
             updatePlayer();
             updateCoins();
             updateEnemies();
+            updateDisc();
+            
+            // Update NYC enemies for Level 2
+            if (currentLevel === 2) {
+                updateNYCEnemies();
+            }
+            
             checkFlag();
             
-            // Move clouds (gentle drift)
-            clouds.forEach(cloud => {
-                cloud.x -= 0.15;
-                if (cloud.x < -60) cloud.x = canvas.width + 30;
-            });
+            // Move clouds (gentle drift) - Level 1 only
+            if (currentLevel === 1) {
+                clouds.forEach(cloud => {
+                    cloud.x -= 0.15;
+                    if (cloud.x < -60) cloud.x = canvas.width + 30;
+                });
+            }
         }
 
         // Draw game with camera offset
@@ -1296,31 +1942,56 @@ game_html = """
                 return;
             }
             
-            drawSky();
+            // Handle transition
+            if (gameState === 'transition') {
+                updateTransition();
+                drawSky();
+                drawTransition();
+                return;
+            }
+            
+            // Draw level-specific background
+            if (currentLevel === 1) {
+                drawSky();
+            } else {
+                drawNYCSky();
+                drawNYCBuildings();
+            }
             
             // Save context and apply camera transform
             ctx.save();
             ctx.translate(-cameraX, 0);
             
             // Draw background elements (parallax - slower)
-            ctx.save();
-            ctx.translate(cameraX * 0.5, 0); // Parallax effect
-            drawHills();
-            ctx.restore();
+            if (currentLevel === 1) {
+                ctx.save();
+                ctx.translate(cameraX * 0.5, 0);
+                drawHills();
+                ctx.restore();
+            }
             
-            // Draw clouds with parallax
-            ctx.save();
-            ctx.translate(cameraX * 0.7, 0);
-            drawClouds();
-            ctx.restore();
+            // Draw clouds with parallax (Level 1 only)
+            if (currentLevel === 1) {
+                ctx.save();
+                ctx.translate(cameraX * 0.7, 0);
+                drawClouds();
+                ctx.restore();
+            }
             
             // Draw game objects
             platforms.forEach(drawPlatform);
             coins.forEach(drawCoin);
+            
+            // Level 1 enemies
             enemies.forEach(drawEnemy);
             turtles.forEach(drawTurtle);
+            
+            // Level 2 enemies
+            nycEnemies.forEach(drawNYCEnemy);
+            
             drawFlag();
             drawPlayer();
+            drawDisc();
             
             ctx.restore();
             
@@ -1329,6 +2000,9 @@ game_html = """
             
             // Draw progress bar at top
             drawProgressBar();
+            
+            // Draw transition overlay if active
+            drawTransition();
         }
         
         // Draw title screen - TRON style
@@ -1863,10 +2537,19 @@ game_html = """
             if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
             if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W' || e.key === ' ') keys.jump = true;
             
+            // Throw disc with X or K
+            if ((e.key === 'x' || e.key === 'X' || e.key === 'k' || e.key === 'K') && gameState === 'playing') {
+                throwDisc();
+            }
+            
             if ((e.key === 'r' || e.key === 'R') && (gameState === 'won' || gameState === 'lost')) {
-                // Go back to character select (keep the name)
-                gameState = 'character';
-                overlay.style.display = 'none';
+                if (gameState === 'lost') {
+                    // Restart from checkpoint (current level)
+                    resetGame();
+                } else {
+                    // Won - go back to beginning for a new game
+                    restartFromBeginning();
+                }
             }
             
             // Prevent scrolling
@@ -1896,6 +2579,7 @@ game_html = """
         
         // Reset game (keep the player name)
         function resetGame() {
+            // Restart at current checkpoint level
             player.x = 50;
             player.y = 350;
             player.velX = 0;
@@ -1903,10 +2587,23 @@ game_html = """
             player.onGround = false;
             player.facingRight = true;
             score = 0;
+            disc.active = false;
             gameState = 'playing';
             cameraX = 0;
+            // Keep totalScore from previous levels
+            loadLevelPlatforms();
             initCoins();
             initEnemies();
+            overlay.style.display = 'none';
+        }
+        
+        // Restart from beginning (after winning or returning to character select)
+        function restartFromBeginning() {
+            currentLevel = 1;
+            totalScore = 0;
+            updateLevelColors();
+            loadLevel(1);
+            gameState = 'character';
             overlay.style.display = 'none';
         }
 
@@ -1975,6 +2672,11 @@ game_html = """
                 }
             }
             
+            // Throw disc on click during gameplay
+            if (gameState === 'playing') {
+                throwDisc();
+            }
+            
             canvas.focus();
         });
 
@@ -1995,18 +2697,21 @@ st.markdown("""
     <strong>⚡ CONTROLS:</strong><br>
     <kbd>← →</kbd> or <kbd>A D</kbd> MOVE &nbsp;|&nbsp; 
     <kbd>SPACE</kbd> or <kbd>↑</kbd> JUMP &nbsp;|&nbsp;
+    <kbd>X</kbd> or <kbd>CLICK</kbd> THROW DISC &nbsp;|&nbsp;
     <kbd>R</kbd> REBOOT
 </div>
 """, unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 with col1:
     st.markdown("⚡ **Collect** energy bits!")
 with col2:
-    st.markdown("🔴 **Avoid** corrupted programs!")
+    st.markdown("🔺 **Throw** your identity disc!")
 with col3:
-    st.markdown("🚪 **Reach** the exit portal!")
+    st.markdown("🏙️ **2 Levels**: The Grid → NYC!")
+with col4:
+    st.markdown("🚪 **Reach** the portal!")
 
 
