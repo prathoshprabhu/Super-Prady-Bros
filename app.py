@@ -1,5 +1,5 @@
 """
-⚡ TRON: ARES - The Grid Runner ⚡
+⚡ Super Prady Bros - The Grid Runner ⚡
 A Tron-inspired platformer game that runs in your browser via Streamlit!
 """
 
@@ -7,7 +7,7 @@ import streamlit as st
 
 # Page configuration
 st.set_page_config(
-    page_title="⚡ TRON: ARES",
+    page_title="⚡ Super Prady Bros",
     page_icon="⚡",
     layout="wide"
 )
@@ -61,7 +61,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Title
-st.markdown('<h1 class="game-title">⚡ TRON: ARES ⚡</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="game-title">⚡ SUPER PRADY BROS ⚡</h1>', unsafe_allow_html=True)
 st.markdown('<p class="game-subtitle">ENTER THE GRID</p>', unsafe_allow_html=True)
 
 # The game HTML/JavaScript
@@ -1375,16 +1375,16 @@ game_html = """
             ctx.shadowColor = COLORS.neonCyan;
             ctx.shadowBlur = 40;
             ctx.fillStyle = COLORS.neonCyan;
-            ctx.font = 'bold 64px "Courier New", monospace';
+            ctx.font = 'bold 42px "Courier New", monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('TRON: ARES', canvas.width / 2, 100);
+            ctx.fillText('SUPER PRADY BROS', canvas.width / 2, 100);
             
             // Secondary glow layer
             ctx.shadowColor = '#FFFFFF';
             ctx.shadowBlur = 20;
             ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 62px "Courier New", monospace';
-            ctx.fillText('TRON: ARES', canvas.width / 2, 100);
+            ctx.font = 'bold 40px "Courier New", monospace';
+            ctx.fillText('SUPER PRADY BROS', canvas.width / 2, 100);
             ctx.shadowBlur = 0;
             
             // Subtitle
