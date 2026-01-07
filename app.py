@@ -1923,8 +1923,9 @@ game_html = """
             cameraX += 1.5;
             
             // Check if reached end - go to Level 4
-            if (cameraX > 3400) {
+            if (cameraX > 3400 && gameState === 'playing') {
                 goToNextLevel();
+                return; // Stop further updates
             }
             
             // Update player position for collision detection
@@ -3168,8 +3169,9 @@ game_html = """
             const finalScore = score + totalScore;
             gameState = 'won';
             overlayTitle.textContent = '⚡ MISSION COMPLETE ⚡';
-            overlayScore.innerHTML = `${playerName.toUpperCase()} escaped both dimensions!<br>
+            overlayScore.innerHTML = `${playerName.toUpperCase()} conquered all dimensions!<br>
                 <span style="color: #FFD700; font-size: 18px;">TOTAL SCORE: ${finalScore} energy bits</span><br>
+                <span style="color: #00DDFF; font-size: 14px;">Grid ✓ NYC ✓ Space ✓ Light Cycle ✓</span><br>
                 <span style="color: #00FFFF; font-size: 12px;">Press R to play again</span>`;
             overlay.style.display = 'flex';
         }
@@ -4122,7 +4124,7 @@ with col1:
 with col2:
     st.markdown("🔺 **Throw** your identity disc!")
 with col3:
-    st.markdown("🚀 **3 Levels**: Grid → NYC → Space!")
+    st.markdown("🚀 **4 Levels**: Grid → NYC → Space → Light Cycle!")
 with col4:
     st.markdown("🚪 **Reach** the portal!")
 
