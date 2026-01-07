@@ -237,6 +237,20 @@ game_html = """
             gridLine: 'rgba(0, 255, 170, 0.1)'
         };
         
+        // Colors - Light Cycle Arena (Level 4)
+        const COLORS_L4 = {
+            skyTop: '#000005',
+            skyBottom: '#000020',
+            ground: '#000000',
+            grass: '#00DDFF',
+            platform: '#0a0a1a',
+            platformTop: '#00DDFF',
+            neonCyan: '#00FFFF',
+            neonOrange: '#FF8800',
+            neonRed: '#FF0044',
+            gridLine: 'rgba(0, 221, 255, 0.3)'
+        };
+        
         // Current colors (changes based on level)
         let COLORS = {
             skyTop: '#000000',
@@ -268,6 +282,7 @@ game_html = """
             let src = COLORS_L1;
             if (currentLevel === 2) src = COLORS_L2;
             else if (currentLevel === 3) src = COLORS_L3;
+            else if (currentLevel === 4) src = COLORS_L4;
             
             COLORS.skyTop = src.skyTop;
             COLORS.skyBottom = src.skyBottom;
@@ -308,7 +323,9 @@ game_html = """
         let invincibilityTimer = 0;
         
         function getMaxHealth() {
-            return currentLevel === 3 ? MAX_HEALTH_L3 : MAX_HEALTH_L2;
+            if (currentLevel === 4) return MAX_HEALTH_L4;
+            if (currentLevel === 3) return MAX_HEALTH_L3;
+            return MAX_HEALTH_L2;
         }
         
         // Enemy discs (Level 2 - enemies shoot at player)
@@ -326,6 +343,21 @@ game_html = """
         let jetVelY = 0; // Jet vertical velocity
         const JET_WIDTH = 60;
         const JET_HEIGHT = 30;
+        
+        // Level 4 - Light Cycle Runner variables
+        const NUM_LANES = 5;
+        const LANE_HEIGHT = 70;
+        const ROAD_TOP = 120;
+        let currentLane = 2; // Start in middle lane (0-4)
+        let lightCycleX = 100;
+        let laneEnemies = [];
+        let recognizerMissiles = [];
+        let roadOffset = 0;
+        const LIGHT_CYCLE_WIDTH = 60;
+        const LIGHT_CYCLE_HEIGHT = 35;
+        const MAX_HEALTH_L4 = 150;
+        let recognizerY = 0;
+        let recognizerPhase = 0;
         
         // Available characters - TRON inspired programs
         const characters = [
@@ -609,6 +641,11 @@ game_html = """
                 initSpaceDrones();
                 initStars();
             }
+            
+            // Level 4 - Light Cycle Runner
+            if (currentLevel === 4) {
+                initLightCycleLevel();
+            }
         }
         
         // Initialize space drones for Level 3
@@ -687,6 +724,56 @@ game_html = """
                 });
             }
         }
+        
+        // Initialize Level 4 - Light Cycle Runner
+        function initLightCycleLevel() {
+            currentLane = 2; // Start in middle lane
+            lightCycleX = 100;
+            laneEnemies = [];
+            recognizerMissiles = [];
+            roadOffset = 0;
+            recognizerY = -100;
+            recognizerPhase = 0;
+            
+            // Spawn initial enemies in lanes
+            spawnLaneEnemies();
+        }
+        
+        // Spawn enemies in lanes at intervals
+        function spawnLaneEnemies() {
+            // Clear and respawn
+            laneEnemies = [];
+            
+            // Spawn waves of enemies
+            for (let wave = 0; wave < 15; wave++) {
+                const xPos = 900 + wave * 400;
+                
+                // Random lanes for each wave (1-3 enemies per wave)
+                const numEnemies = 1 + Math.floor(Math.random() * 3);
+                const usedLanes = [];
+                
+                for (let i = 0; i < numEnemies; i++) {
+                    let lane;
+                    do {
+                        lane = Math.floor(Math.random() * NUM_LANES);
+                    } while (usedLanes.includes(lane));
+                    usedLanes.push(lane);
+                    
+                    const types = ['cycle', 'barrier', 'sentry'];
+                    const type = types[Math.floor(Math.random() * types.length)];
+                    
+                    laneEnemies.push({
+                        x: xPos + Math.random() * 100,
+                        lane: lane,
+                        type: type,
+                        width: type === 'barrier' ? 80 : 50,
+                        height: type === 'barrier' ? LANE_HEIGHT - 10 : 30,
+                        health: type === 'sentry' ? 2 : 1,
+                        active: true
+                    });
+                }
+            }
+        }
 
         // Portal - At the end of each level
         let portal = {
@@ -740,13 +827,26 @@ game_html = """
             enemyDiscs = [];
             missiles = [];
             droneProjectiles = [];
+            recognizerMissiles = [];
+            laneEnemies = [];
             
-            // Reset health for Level 2 and 3
+            // Reset health based on level
             if (levelNum >= 2) {
-                playerHealth = levelNum === 3 ? MAX_HEALTH_L3 : MAX_HEALTH_L2;
+                if (levelNum === 4) playerHealth = MAX_HEALTH_L4;
+                else if (levelNum === 3) playerHealth = MAX_HEALTH_L3;
+                else playerHealth = MAX_HEALTH_L2;
             }
             
-            if (levelNum === 3) {
+            if (levelNum === 4) {
+                // Light Cycle Runner mode
+                currentLane = 2;
+                lightCycleX = 100;
+                roadOffset = 0;
+                recognizerY = 0;
+                recognizerPhase = 0;
+                player.width = LIGHT_CYCLE_WIDTH;
+                player.height = LIGHT_CYCLE_HEIGHT;
+            } else if (levelNum === 3) {
                 // Space shooter mode
                 jetY = canvas.height / 2 - JET_HEIGHT / 2;
                 jetVelY = 0;
@@ -764,7 +864,7 @@ game_html = """
             }
             
             updateLevelColors();
-            if (levelNum !== 3) {
+            if (levelNum !== 3 && levelNum !== 4) {
                 loadLevelPlatforms();
             }
             initCoins();
@@ -784,8 +884,12 @@ game_html = """
                 // Go to Level 3 (Space)
                 gameState = 'transition';
                 transitionDirection = 1;
+            } else if (currentLevel === 3) {
+                // Go to Level 4 (Light Cycle)
+                gameState = 'transition';
+                transitionDirection = 1;
             } else {
-                // Won the game after Level 3!
+                // Won the game after Level 4!
                 gameWon();
             }
         }
@@ -823,6 +927,10 @@ game_html = """
                         titleText = 'ENTERING SPACE DIMENSION';
                         titleColor = 'rgba(0, 255, 170, ';
                         subText = '[ PILOT YOUR JET - FIRE MISSILES ]';
+                    } else if (currentLevel === 3) {
+                        titleText = 'ENTERING LIGHT CYCLE ARENA';
+                        titleColor = 'rgba(0, 221, 255, ';
+                        subText = '[ DODGE OBSTACLES - SURVIVE THE GRID ]';
                     }
                     
                     ctx.fillStyle = titleColor + `${(transitionAlpha - 0.5) * 2})`;
@@ -1923,6 +2031,399 @@ game_html = """
             });
         }
         
+        // ========== LEVEL 4 - LIGHT CYCLE RUNNER FUNCTIONS ==========
+        
+        // Draw the Light Cycle road with grid
+        function drawLightCycleRoad() {
+            // Sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, '#000005');
+            gradient.addColorStop(0.3, '#000015');
+            gradient.addColorStop(1, '#000025');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Road surface
+            ctx.fillStyle = '#0a0a15';
+            ctx.fillRect(0, ROAD_TOP, canvas.width, NUM_LANES * LANE_HEIGHT + 20);
+            
+            // Animated grid lines on road (scrolling effect)
+            ctx.strokeStyle = COLORS_L4.gridLine;
+            ctx.lineWidth = 1;
+            
+            // Horizontal lane dividers
+            for (let i = 0; i <= NUM_LANES; i++) {
+                const y = ROAD_TOP + i * LANE_HEIGHT;
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+                
+                // Glow on lane edges
+                if (i > 0 && i < NUM_LANES) {
+                    ctx.shadowColor = '#00DDFF';
+                    ctx.shadowBlur = 3;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                }
+            }
+            
+            // Vertical grid lines (scrolling)
+            const gridSpacing = 100;
+            const offset = roadOffset % gridSpacing;
+            ctx.strokeStyle = 'rgba(0, 221, 255, 0.15)';
+            for (let x = -offset; x < canvas.width + gridSpacing; x += gridSpacing) {
+                ctx.beginPath();
+                ctx.moveTo(x, ROAD_TOP);
+                ctx.lineTo(x, ROAD_TOP + NUM_LANES * LANE_HEIGHT);
+                ctx.stroke();
+            }
+            
+            // Edge glow
+            ctx.shadowColor = '#00DDFF';
+            ctx.shadowBlur = 15;
+            ctx.strokeStyle = '#00DDFF';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(0, ROAD_TOP);
+            ctx.lineTo(canvas.width, ROAD_TOP);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(0, ROAD_TOP + NUM_LANES * LANE_HEIGHT);
+            ctx.lineTo(canvas.width, ROAD_TOP + NUM_LANES * LANE_HEIGHT);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+        }
+        
+        // Draw the Recognizer (big enemy ship in background)
+        function drawRecognizer() {
+            const recX = canvas.width - 150;
+            const recY = 30 + Math.sin(recognizerPhase) * 20;
+            const pulse = 0.7 + Math.sin(Date.now() / 200) * 0.3;
+            
+            ctx.save();
+            
+            // Main body
+            ctx.fillStyle = '#0a0a0a';
+            ctx.beginPath();
+            ctx.moveTo(recX, recY + 40);
+            ctx.lineTo(recX + 100, recY + 40);
+            ctx.lineTo(recX + 120, recY + 60);
+            ctx.lineTo(recX + 100, recY + 80);
+            ctx.lineTo(recX, recY + 80);
+            ctx.lineTo(recX - 20, recY + 60);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Orange circuit lines
+            ctx.strokeStyle = '#FF8800';
+            ctx.shadowColor = '#FF8800';
+            ctx.shadowBlur = 10 * pulse;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Legs
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(recX + 10, recY + 80, 15, 40);
+            ctx.fillRect(recX + 75, recY + 80, 15, 40);
+            ctx.strokeStyle = '#FF8800';
+            ctx.strokeRect(recX + 10, recY + 80, 15, 40);
+            ctx.strokeRect(recX + 75, recY + 80, 15, 40);
+            
+            // Eye/Scanner
+            ctx.fillStyle = '#FF0044';
+            ctx.shadowColor = '#FF0044';
+            ctx.shadowBlur = 15 * pulse;
+            ctx.beginPath();
+            ctx.ellipse(recX + 50, recY + 60, 20, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+        
+        // Draw player Light Cycle
+        function drawLightCycle() {
+            const char = characters[selectedCharacter];
+            const mainColor = char.circuitColor || '#00FFFF';
+            const laneY = ROAD_TOP + currentLane * LANE_HEIGHT + LANE_HEIGHT / 2;
+            const x = lightCycleX;
+            const y = laneY - LIGHT_CYCLE_HEIGHT / 2;
+            
+            // Trail effect
+            ctx.shadowColor = mainColor;
+            ctx.shadowBlur = 20;
+            ctx.strokeStyle = mainColor;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x - 50, laneY);
+            ctx.lineTo(x, laneY);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            
+            // Cycle body
+            ctx.fillStyle = '#000000';
+            ctx.beginPath();
+            ctx.moveTo(x + LIGHT_CYCLE_WIDTH, y + LIGHT_CYCLE_HEIGHT / 2);
+            ctx.lineTo(x + LIGHT_CYCLE_WIDTH - 15, y);
+            ctx.lineTo(x + 10, y);
+            ctx.lineTo(x, y + 10);
+            ctx.lineTo(x, y + LIGHT_CYCLE_HEIGHT - 10);
+            ctx.lineTo(x + 10, y + LIGHT_CYCLE_HEIGHT);
+            ctx.lineTo(x + LIGHT_CYCLE_WIDTH - 15, y + LIGHT_CYCLE_HEIGHT);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Circuit outline
+            ctx.strokeStyle = mainColor;
+            ctx.shadowColor = mainColor;
+            ctx.shadowBlur = 8;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            // Wheel
+            ctx.fillStyle = mainColor;
+            ctx.beginPath();
+            ctx.arc(x + LIGHT_CYCLE_WIDTH - 10, y + LIGHT_CYCLE_HEIGHT / 2, 8, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Rider silhouette
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x + 20, y - 8, 20, 12);
+            ctx.strokeStyle = mainColor;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x + 20, y - 8, 20, 12);
+            
+            ctx.shadowBlur = 0;
+            
+            // Player name
+            if (playerName) {
+                ctx.font = 'bold 10px "Courier New", monospace';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = mainColor;
+                ctx.shadowColor = mainColor;
+                ctx.shadowBlur = 5;
+                ctx.fillText(playerName.toUpperCase(), x + LIGHT_CYCLE_WIDTH / 2, y - 15);
+                ctx.shadowBlur = 0;
+                ctx.textAlign = 'left';
+            }
+        }
+        
+        // Draw lane enemy
+        function drawLaneEnemy(enemy) {
+            if (!enemy.active) return;
+            
+            const laneY = ROAD_TOP + enemy.lane * LANE_HEIGHT + LANE_HEIGHT / 2;
+            const x = enemy.x - cameraX;
+            const y = laneY - enemy.height / 2;
+            const pulse = 0.7 + Math.sin(Date.now() / 150) * 0.3;
+            
+            // Skip if off screen
+            if (x < -100 || x > canvas.width + 100) return;
+            
+            ctx.save();
+            
+            if (enemy.type === 'cycle') {
+                // Enemy light cycle - red
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.moveTo(x + enemy.width, y + enemy.height / 2);
+                ctx.lineTo(x + enemy.width - 10, y);
+                ctx.lineTo(x + 5, y);
+                ctx.lineTo(x, y + enemy.height / 2);
+                ctx.lineTo(x + 5, y + enemy.height);
+                ctx.lineTo(x + enemy.width - 10, y + enemy.height);
+                ctx.closePath();
+                ctx.fill();
+                
+                ctx.strokeStyle = '#FF0044';
+                ctx.shadowColor = '#FF0044';
+                ctx.shadowBlur = 8 * pulse;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+            } else if (enemy.type === 'barrier') {
+                // Digital barrier
+                ctx.fillStyle = '#000';
+                ctx.fillRect(x, y, enemy.width, enemy.height);
+                
+                ctx.strokeStyle = '#FF8800';
+                ctx.shadowColor = '#FF8800';
+                ctx.shadowBlur = 10 * pulse;
+                ctx.lineWidth = 3;
+                ctx.strokeRect(x, y, enemy.width, enemy.height);
+                
+                // Warning pattern
+                ctx.fillStyle = '#FF8800';
+                for (let i = 0; i < enemy.width; i += 20) {
+                    ctx.fillRect(x + i, y, 10, 5);
+                    ctx.fillRect(x + i + 10, y + enemy.height - 5, 10, 5);
+                }
+                
+            } else if (enemy.type === 'sentry') {
+                // Sentry drone
+                ctx.fillStyle = '#000';
+                ctx.beginPath();
+                ctx.arc(x + enemy.width/2, y + enemy.height/2, enemy.width/2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.strokeStyle = '#FF0066';
+                ctx.shadowColor = '#FF0066';
+                ctx.shadowBlur = 10 * pulse;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Eye
+                ctx.fillStyle = '#FF0066';
+                ctx.beginPath();
+                ctx.arc(x + enemy.width/2, y + enemy.height/2, 5, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Health indicator
+                if (enemy.health > 1) {
+                    ctx.fillRect(x + enemy.width/2 - 10, y - 8, 20, 4);
+                }
+            }
+            
+            ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+        
+        // Draw recognizer missile
+        function drawRecognizerMissile(missile) {
+            const x = missile.x;
+            const y = missile.y;
+            const pulse = 0.8 + Math.sin(Date.now() / 100) * 0.2;
+            
+            ctx.save();
+            
+            ctx.shadowColor = '#FF8800';
+            ctx.shadowBlur = 12 * pulse;
+            
+            // Missile body
+            ctx.fillStyle = '#FF8800';
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x + 25, y + 6);
+            ctx.lineTo(x + 25, y + 14);
+            ctx.lineTo(x, y + 20);
+            ctx.lineTo(x + 10, y + 10);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Black center
+            ctx.fillStyle = '#000';
+            ctx.fillRect(x + 8, y + 6, 12, 8);
+            
+            ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+        
+        // Update Light Cycle
+        function updateLightCycle() {
+            // Lane switching
+            if (keys.jump && currentLane > 0) {
+                currentLane--;
+                keys.jump = false; // Prevent holding
+            }
+            if (keys.down && currentLane < NUM_LANES - 1) {
+                currentLane++;
+                keys.down = false;
+            }
+            
+            // Auto-scroll
+            cameraX += 4;
+            roadOffset += 4;
+            
+            // Update recognizer
+            recognizerPhase += 0.02;
+            
+            // Spawn recognizer missiles
+            if (Math.random() < 0.015) { // ~1% chance per frame
+                const targetLane = Math.floor(Math.random() * NUM_LANES);
+                recognizerMissiles.push({
+                    x: canvas.width + 50,
+                    y: ROAD_TOP + targetLane * LANE_HEIGHT + LANE_HEIGHT / 2 - 10,
+                    lane: targetLane,
+                    speed: 8
+                });
+            }
+            
+            // Check if reached end (after ~6000 distance)
+            if (cameraX > 6000) {
+                gameWon();
+            }
+            
+            // Update player collision box
+            player.x = lightCycleX;
+            player.y = ROAD_TOP + currentLane * LANE_HEIGHT + LANE_HEIGHT / 2 - LIGHT_CYCLE_HEIGHT / 2;
+            player.width = LIGHT_CYCLE_WIDTH;
+            player.height = LIGHT_CYCLE_HEIGHT;
+        }
+        
+        // Update lane enemies
+        function updateLaneEnemies() {
+            const playerLaneY = ROAD_TOP + currentLane * LANE_HEIGHT;
+            
+            laneEnemies.forEach(enemy => {
+                if (!enemy.active) return;
+                
+                const screenX = enemy.x - cameraX;
+                
+                // Check collision with player
+                if (enemy.lane === currentLane && 
+                    screenX < lightCycleX + LIGHT_CYCLE_WIDTH &&
+                    screenX + enemy.width > lightCycleX) {
+                    
+                    if (invincibilityTimer <= 0) {
+                        const damage = enemy.type === 'barrier' ? 20 : 15;
+                        playerHealth -= damage;
+                        invincibilityTimer = 45;
+                        enemy.active = false;
+                        
+                        if (playerHealth <= 0) {
+                            gameOver();
+                        }
+                    }
+                }
+                
+                // Deactivate if passed
+                if (screenX < -100) {
+                    enemy.active = false;
+                    score += 5; // Points for passing obstacles
+                }
+            });
+        }
+        
+        // Update recognizer missiles
+        function updateRecognizerMissiles() {
+            for (let i = recognizerMissiles.length - 1; i >= 0; i--) {
+                const missile = recognizerMissiles[i];
+                missile.x -= missile.speed;
+                
+                // Remove if off screen
+                if (missile.x < -50) {
+                    recognizerMissiles.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collision with player
+                if (missile.lane === currentLane &&
+                    missile.x < lightCycleX + LIGHT_CYCLE_WIDTH &&
+                    missile.x + 25 > lightCycleX &&
+                    invincibilityTimer <= 0) {
+                    
+                    playerHealth -= 10;
+                    invincibilityTimer = 30;
+                    recognizerMissiles.splice(i, 1);
+                    
+                    if (playerHealth <= 0) {
+                        gameOver();
+                    }
+                }
+            }
+        }
+        
         // Update NYC enemies (harder AI with disc shooting)
         function updateNYCEnemies() {
             const playerCenterX = player.x + player.width / 2;
@@ -2477,8 +2978,12 @@ game_html = """
             ctx.fillText(`${score + totalScore} / ${coins.length}`, 50, 32);
             
             // Level indicator
-            const levelText = currentLevel === 1 ? 'THE GRID' : (currentLevel === 2 ? 'NYC' : 'SPACE');
-            const levelColor = currentLevel === 1 ? '#00FFFF' : (currentLevel === 2 ? '#FFD700' : '#00FFAA');
+            let levelText, levelColor;
+            if (currentLevel === 1) { levelText = 'THE GRID'; levelColor = '#00FFFF'; }
+            else if (currentLevel === 2) { levelText = 'NYC'; levelColor = '#FFD700'; }
+            else if (currentLevel === 3) { levelText = 'SPACE'; levelColor = '#00FFAA'; }
+            else { levelText = 'CYCLE'; levelColor = '#00DDFF'; }
+            
             ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
             ctx.fillRect(canvas.width - 120, 12, 105, 30);
             ctx.strokeStyle = levelColor;
@@ -2491,13 +2996,22 @@ game_html = """
             ctx.shadowBlur = 0;
             
             // Weapon indicator (Level 2: Disc, Level 3: Missile)
-            if (currentLevel >= 2) {
+            if (currentLevel === 2 || currentLevel === 3) {
                 ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
                 ctx.fillRect(15, 48, 95, 22);
                 const weaponColor = characters[selectedCharacter].circuitColor;
                 ctx.fillStyle = currentLevel === 2 && disc.active ? '#555' : weaponColor;
                 ctx.font = '12px "Courier New", monospace';
                 ctx.fillText(currentLevel === 2 ? '[X] DISC' : '[X] MISSILE', 22, 63);
+            }
+            
+            // Level 4 controls hint
+            if (currentLevel === 4) {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(15, 48, 130, 22);
+                ctx.fillStyle = '#00DDFF';
+                ctx.font = '11px "Courier New", monospace';
+                ctx.fillText('[↑/↓] SWITCH LANES', 22, 63);
             }
         }
 
@@ -2680,6 +3194,14 @@ game_html = """
                 return; // Skip platformer updates
             }
             
+            // Level 4 - Light Cycle Runner mode
+            if (currentLevel === 4) {
+                updateLightCycle();
+                updateLaneEnemies();
+                updateRecognizerMissiles();
+                return; // Skip platformer updates
+            }
+            
             updatePlayer();
             updateCoins();
             updateEnemies();
@@ -2754,6 +3276,32 @@ game_html = """
                 // Flash when invincible
                 if (invincibilityTimer <= 0 || Math.floor(invincibilityTimer / 5) % 2 === 1) {
                     drawJet();
+                }
+                
+                // UI
+                drawUI();
+                drawHealthBar();
+                
+                // Draw progress bar
+                drawProgressBar();
+                drawTransition();
+                return;
+            }
+            
+            // Level 4 - Light Cycle Runner drawing
+            if (currentLevel === 4) {
+                drawLightCycleRoad();
+                drawRecognizer();
+                
+                // Draw lane enemies
+                laneEnemies.forEach(drawLaneEnemy);
+                
+                // Draw recognizer missiles
+                recognizerMissiles.forEach(drawRecognizerMissile);
+                
+                // Draw player light cycle (flash when invincible)
+                if (invincibilityTimer <= 0 || Math.floor(invincibilityTimer / 5) % 2 === 1) {
+                    drawLightCycle();
                 }
                 
                 // UI
@@ -3270,9 +3818,11 @@ game_html = """
 
         // Draw level progress bar - TRON style
         function drawProgressBar() {
-            // Level 3 uses camera position for progress
-            const worldWidth = currentLevel === 3 ? 3500 : WORLD_WIDTH;
-            const progress = currentLevel === 3 ? cameraX / worldWidth : player.x / worldWidth;
+            // Level 3 and 4 use camera position for progress
+            let worldWidth = WORLD_WIDTH;
+            if (currentLevel === 3) worldWidth = 3500;
+            else if (currentLevel === 4) worldWidth = 6000;
+            const progress = (currentLevel === 3 || currentLevel === 4) ? cameraX / worldWidth : player.x / worldWidth;
             const barWidth = 200;
             const barHeight = 6;
             const barX = canvas.width - barWidth - 20;
