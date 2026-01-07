@@ -1922,9 +1922,9 @@ game_html = """
             // Auto-scroll camera
             cameraX += 1.5;
             
-            // Check if reached end
+            // Check if reached end - go to Level 4
             if (cameraX > 3400) {
-                gameWon();
+                goToNextLevel();
             }
             
             // Update player position for collision detection
