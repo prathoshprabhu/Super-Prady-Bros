@@ -293,6 +293,16 @@ game_html = """
         const DISC_SPEED = 12;
         const DISC_SIZE = 15;
         
+        // Player health (Level 2 only)
+        const MAX_HEALTH = 25;
+        let playerHealth = MAX_HEALTH;
+        let invincibilityTimer = 0;
+        
+        // Enemy discs (Level 2 - enemies shoot at player)
+        let enemyDiscs = [];
+        const ENEMY_DISC_SPEED = 5;
+        const ENEMY_DISC_SIZE = 10;
+        
         // Available characters - TRON inspired programs
         const characters = [
             { 
@@ -553,19 +563,19 @@ game_html = """
                 enemies = []; // No basic enemies in L2
                 turtles = []; // No turtles in L2
                 nycEnemies = [
-                    // Thug type - fast, aggressive, requires 2 hits
-                    { x: 200, y: 412, width: 42, height: 45, patrolLeft: 150, patrolRight: 280, direction: 1, type: 'thug', speed: 1.5, health: 2, jumpTimer: 0 },
-                    { x: 650, y: 412, width: 42, height: 45, patrolLeft: 600, patrolRight: 780, direction: -1, type: 'thug', speed: 1.8, health: 2, jumpTimer: 0 },
-                    // Drone type - flies, unpredictable movement
-                    { x: 400, y: 320, width: 35, height: 35, patrolLeft: 350, patrolRight: 550, direction: 1, type: 'drone', speed: 1.2, health: 1, floatOffset: 0 },
-                    { x: 1000, y: 280, width: 35, height: 35, patrolLeft: 900, patrolRight: 1100, direction: -1, type: 'drone', speed: 1.4, health: 1, floatOffset: Math.PI },
-                    { x: 1900, y: 300, width: 35, height: 35, patrolLeft: 1830, patrolRight: 2020, direction: 1, type: 'drone', speed: 1.3, health: 1, floatOffset: Math.PI/2 },
-                    // Jumper type - jumps at player, hard to dodge
-                    { x: 1200, y: 412, width: 40, height: 40, patrolLeft: 1120, patrolRight: 1280, direction: 1, type: 'jumper', speed: 1.0, health: 1, velY: 0, onGround: true, jumpCooldown: 0 },
-                    { x: 1700, y: 412, width: 40, height: 40, patrolLeft: 1600, patrolRight: 1780, direction: -1, type: 'jumper', speed: 1.2, health: 1, velY: 0, onGround: true, jumpCooldown: 0 },
-                    { x: 2200, y: 412, width: 40, height: 40, patrolLeft: 2100, patrolRight: 2330, direction: 1, type: 'jumper', speed: 1.1, health: 1, velY: 0, onGround: true, jumpCooldown: 0 },
-                    // Boss thug at the end
-                    { x: 2750, y: 405, width: 50, height: 55, patrolLeft: 2680, patrolRight: 2920, direction: 1, type: 'boss', speed: 0.8, health: 4, jumpTimer: 0 },
+                    // Thug type - aggressive, requires 2 hits, shoots discs
+                    { x: 200, y: 412, width: 42, height: 45, patrolLeft: 150, patrolRight: 280, direction: 1, type: 'thug', speed: 0.9, health: 2, shootTimer: 0, shootCooldown: 120 },
+                    { x: 650, y: 412, width: 42, height: 45, patrolLeft: 600, patrolRight: 780, direction: -1, type: 'thug', speed: 0.8, health: 2, shootTimer: 0, shootCooldown: 100 },
+                    // Drone type - flies, shoots discs
+                    { x: 400, y: 320, width: 35, height: 35, patrolLeft: 350, patrolRight: 550, direction: 1, type: 'drone', speed: 0.7, health: 1, floatOffset: 0, shootTimer: 0, shootCooldown: 90 },
+                    { x: 1000, y: 280, width: 35, height: 35, patrolLeft: 900, patrolRight: 1100, direction: -1, type: 'drone', speed: 0.8, health: 1, floatOffset: Math.PI, shootTimer: 0, shootCooldown: 110 },
+                    { x: 1900, y: 300, width: 35, height: 35, patrolLeft: 1830, patrolRight: 2020, direction: 1, type: 'drone', speed: 0.7, health: 1, floatOffset: Math.PI/2, shootTimer: 0, shootCooldown: 100 },
+                    // Jumper type - jumps at player
+                    { x: 1200, y: 412, width: 40, height: 40, patrolLeft: 1120, patrolRight: 1280, direction: 1, type: 'jumper', speed: 0.8, health: 1, velY: 0, onGround: true, jumpCooldown: 0 },
+                    { x: 1700, y: 412, width: 40, height: 40, patrolLeft: 1600, patrolRight: 1780, direction: -1, type: 'jumper', speed: 0.7, health: 1, velY: 0, onGround: true, jumpCooldown: 0 },
+                    { x: 2200, y: 412, width: 40, height: 40, patrolLeft: 2100, patrolRight: 2330, direction: 1, type: 'jumper', speed: 0.8, health: 1, velY: 0, onGround: true, jumpCooldown: 0 },
+                    // Boss - slow but shoots frequently
+                    { x: 2750, y: 405, width: 50, height: 55, patrolLeft: 2680, patrolRight: 2920, direction: 1, type: 'boss', speed: 0.5, health: 4, shootTimer: 0, shootCooldown: 60 },
                 ];
             }
         }
@@ -623,6 +633,14 @@ game_html = """
             player.onGround = false;
             cameraX = 0;
             disc.active = false;
+            
+            // Reset health for Level 2
+            if (levelNum === 2) {
+                playerHealth = MAX_HEALTH;
+            }
+            invincibilityTimer = 0;
+            enemyDiscs = [];
+            
             updateLevelColors();
             loadLevelPlatforms();
             initCoins();
@@ -839,6 +857,13 @@ game_html = """
             const char = characters[selectedCharacter];
             const circuitColor = char.circuitColor || '#00FFFF';
             const secondaryColor = char.secondaryColor || '#0088FF';
+            
+            // Flash when invincible (Level 2)
+            if (currentLevel === 2 && invincibilityTimer > 0) {
+                if (Math.floor(invincibilityTimer / 5) % 2 === 0) {
+                    return; // Skip drawing every other 5 frames for flashing effect
+                }
+            }
             
             // Draw player name above character
             if (playerName) {
@@ -1148,154 +1173,215 @@ game_html = """
             }
         }
         
-        // Draw NYC enemy types
+        // Draw NYC enemy types - Digital Tron style (black body with red circuit outlines)
         function drawNYCEnemy(enemy) {
             const { x, y, width, height, type, direction, health } = enemy;
-            const bounce = Math.sin(Date.now() / 150) * 2;
+            const pulse = 0.7 + Math.sin(Date.now() / 200) * 0.3;
             
             // Ground glow
-            ctx.shadowColor = '#FF1744';
-            ctx.shadowBlur = 10;
-            ctx.fillStyle = 'rgba(255, 23, 68, 0.4)';
+            ctx.shadowColor = '#FF0044';
+            ctx.shadowBlur = 8 * pulse;
+            ctx.fillStyle = 'rgba(255, 0, 68, 0.3)';
             ctx.beginPath();
-            ctx.ellipse(x + width/2, y + height + 2, width/2, 4, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + width/2, y + height + 2, width/2.5, 3, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
             
             if (type === 'thug' || type === 'boss') {
-                // Thug/Boss - humanoid shape with glowing eyes
+                // Digital Thug/Boss - 8-bit style, black with red circuit outlines
                 const scale = type === 'boss' ? 1.2 : 1;
                 
-                ctx.fillStyle = '#1a1a1a';
-                // Body
-                ctx.fillRect(x + 5 * scale, y + 15 * scale, width - 10 * scale, height - 20 * scale);
-                // Head
-                ctx.fillRect(x + 10 * scale, y, width - 20 * scale, 18 * scale);
-                // Legs
-                ctx.fillRect(x + 8 * scale, y + height - 12, 8, 12);
-                ctx.fillRect(x + width - 16 * scale, y + height - 12, 8, 12);
+                // Solid black body
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(x + 6, y + 14, width - 12, height - 18);
+                ctx.fillRect(x + 12, y + 2, width - 24, 14);
+                ctx.fillRect(x + 10, y + height - 10, 8, 10);
+                ctx.fillRect(x + width - 18, y + height - 10, 8, 10);
                 
-                // Red circuits
-                ctx.strokeStyle = '#FF1744';
-                ctx.shadowColor = '#FF1744';
-                ctx.shadowBlur = 8;
+                // Red circuit outlines
+                ctx.strokeStyle = '#FF0044';
+                ctx.shadowColor = '#FF0044';
+                ctx.shadowBlur = 6 * pulse;
                 ctx.lineWidth = 2;
                 
-                // Eyes
-                ctx.fillStyle = '#FF1744';
-                ctx.fillRect(x + 14 * scale, y + 6, 4, 4);
-                ctx.fillRect(x + width - 18 * scale, y + 6, 4, 4);
+                // Head outline
+                ctx.strokeRect(x + 12, y + 2, width - 24, 14);
+                // Body outline
+                ctx.strokeRect(x + 6, y + 14, width - 12, height - 18);
+                // Leg outlines
+                ctx.strokeRect(x + 10, y + height - 10, 8, 10);
+                ctx.strokeRect(x + width - 18, y + height - 10, 8, 10);
                 
-                // Body circuits
+                // Eyes - glowing red pixels
+                ctx.fillStyle = '#FF0044';
+                ctx.fillRect(x + 16, y + 6, 4, 4);
+                ctx.fillRect(x + width - 20, y + 6, 4, 4);
+                
+                // Circuit pattern on body
                 ctx.beginPath();
-                ctx.moveTo(x + width/2, y + 15 * scale);
-                ctx.lineTo(x + width/2, y + height - 15);
+                ctx.moveTo(x + width/2, y + 16);
+                ctx.lineTo(x + width/2, y + height - 12);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 10, y + 24);
+                ctx.lineTo(x + width - 10, y + 24);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 10, y + 34);
+                ctx.lineTo(x + width - 10, y + 34);
                 ctx.stroke();
                 
                 // Health indicator for boss
                 if (type === 'boss' && health > 1) {
-                    ctx.fillStyle = '#FF1744';
                     for (let i = 0; i < health; i++) {
-                        ctx.fillRect(x + 10 + i * 12, y - 10, 10, 6);
+                        ctx.fillRect(x + 8 + i * 12, y - 8, 10, 5);
                     }
                 }
                 ctx.shadowBlur = 0;
                 
             } else if (type === 'drone') {
-                // Drone - floating, circular with propellers
-                const floatY = y + Math.sin(Date.now() / 100 + enemy.floatOffset) * 8;
+                // Digital Drone - 8-bit flying disc
+                const floatY = y + Math.sin(Date.now() / 120 + enemy.floatOffset) * 6;
                 
-                ctx.fillStyle = '#1a1a1a';
+                // Black body
+                ctx.fillStyle = '#000000';
                 ctx.beginPath();
-                ctx.ellipse(x + width/2, floatY + height/2, width/2, height/3, 0, 0, Math.PI * 2);
+                ctx.ellipse(x + width/2, floatY + height/2, width/2 - 2, height/3, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Propeller arms
-                ctx.strokeStyle = '#333';
-                ctx.lineWidth = 3;
+                // Red outline
+                ctx.strokeStyle = '#FF0044';
+                ctx.shadowColor = '#FF0044';
+                ctx.shadowBlur = 8 * pulse;
+                ctx.lineWidth = 2;
                 ctx.beginPath();
-                ctx.moveTo(x, floatY + height/2);
-                ctx.lineTo(x + width, floatY + height/2);
+                ctx.ellipse(x + width/2, floatY + height/2, width/2 - 2, height/3, 0, 0, Math.PI * 2);
                 ctx.stroke();
                 
-                // Red scanner
-                ctx.shadowColor = '#FF1744';
-                ctx.shadowBlur = 12;
-                ctx.fillStyle = '#FF1744';
+                // Center scanner eye
+                ctx.fillStyle = '#FF0044';
                 ctx.beginPath();
-                ctx.arc(x + width/2, floatY + height/2, 6, 0, Math.PI * 2);
+                ctx.arc(x + width/2, floatY + height/2, 5, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Spinning propellers
-                const propAngle = Date.now() / 50;
-                ctx.strokeStyle = '#FF1744';
-                ctx.lineWidth = 2;
-                for (let i = 0; i < 4; i++) {
-                    const angle = propAngle + (i * Math.PI / 2);
-                    const px = x + width/2 + Math.cos(angle) * 18;
-                    const py = floatY + height/2;
-                    ctx.beginPath();
-                    ctx.arc(px, py, 5, 0, Math.PI * 2);
-                    ctx.stroke();
-                }
+                // Side circuit lines
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x + 4, floatY + height/2);
+                ctx.lineTo(x + width/2 - 8, floatY + height/2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + width/2 + 8, floatY + height/2);
+                ctx.lineTo(x + width - 4, floatY + height/2);
+                ctx.stroke();
+                
                 ctx.shadowBlur = 0;
                 
             } else if (type === 'jumper') {
-                // Jumper - compact, spring-like
-                const squash = enemy.onGround ? 1 : 0.8;
+                // Digital Jumper - compact 8-bit style
+                const squash = enemy.onGround ? 1 : 0.85;
                 
-                ctx.fillStyle = '#1a1a1a';
-                ctx.fillRect(x + 5, y + 10 * squash, width - 10, (height - 10) * squash);
+                // Black body
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(x + 6, y + 8 * squash, width - 12, (height - 12) * squash);
+                ctx.fillRect(x + 10, y + height - 8, 6, 8);
+                ctx.fillRect(x + width - 16, y + height - 8, 6, 8);
                 
-                // Spring legs
-                ctx.strokeStyle = '#333';
-                ctx.lineWidth = 4;
+                // Red outlines
+                ctx.strokeStyle = '#FF0044';
+                ctx.shadowColor = '#FF0044';
+                ctx.shadowBlur = 6 * pulse;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x + 6, y + 8 * squash, width - 12, (height - 12) * squash);
+                ctx.strokeRect(x + 10, y + height - 8, 6, 8);
+                ctx.strokeRect(x + width - 16, y + height - 8, 6, 8);
+                
+                // Eyes
+                ctx.fillStyle = '#FF0044';
+                ctx.fillRect(x + 12, y + 14 * squash, 5, 5);
+                ctx.fillRect(x + width - 17, y + 14 * squash, 5, 5);
+                
+                // Circuit lines
+                ctx.lineWidth = 1;
                 ctx.beginPath();
-                ctx.moveTo(x + 10, y + height - 5);
-                ctx.quadraticCurveTo(x + 5, y + height + 5, x + 10, y + height);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x + width - 10, y + height - 5);
-                ctx.quadraticCurveTo(x + width - 5, y + height + 5, x + width - 10, y + height);
+                ctx.moveTo(x + width/2, y + 10 * squash);
+                ctx.lineTo(x + width/2, y + (height - 14) * squash);
                 ctx.stroke();
                 
-                // Angry eyes
-                ctx.shadowColor = '#FF1744';
-                ctx.shadowBlur = 10;
-                ctx.fillStyle = '#FF1744';
-                ctx.fillRect(x + 10, y + 15 * squash, 6, 6);
-                ctx.fillRect(x + width - 16, y + 15 * squash, 6, 6);
                 ctx.shadowBlur = 0;
             }
         }
         
-        // Update NYC enemies (harder AI)
+        // Draw enemy disc (red triangular)
+        function drawEnemyDisc(eDisc) {
+            ctx.save();
+            ctx.translate(eDisc.x, eDisc.y);
+            ctx.rotate(eDisc.rotation);
+            
+            ctx.shadowColor = '#FF0044';
+            ctx.shadowBlur = 10;
+            
+            // Red triangular disc
+            ctx.fillStyle = '#FF0044';
+            ctx.beginPath();
+            ctx.moveTo(0, -ENEMY_DISC_SIZE);
+            ctx.lineTo(ENEMY_DISC_SIZE * 0.866, ENEMY_DISC_SIZE * 0.5);
+            ctx.lineTo(-ENEMY_DISC_SIZE * 0.866, ENEMY_DISC_SIZE * 0.5);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Black center
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(0, 0, 3, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+            ctx.restore();
+        }
+        
+        // Update NYC enemies (harder AI with disc shooting)
         function updateNYCEnemies() {
             const playerCenterX = player.x + player.width / 2;
             const playerCenterY = player.y + player.height / 2;
             
             nycEnemies.forEach(enemy => {
                 const distToPlayer = Math.abs(enemy.x + enemy.width/2 - playerCenterX);
+                const enemyCenterX = enemy.x + enemy.width / 2;
+                const enemyCenterY = enemy.y + enemy.height / 2;
                 
                 if (enemy.type === 'thug' || enemy.type === 'boss') {
-                    // Aggressive patrolling, speeds up when player is near
-                    const speedMult = distToPlayer < 200 ? 1.8 : 1.0;
-                    enemy.x += enemy.speed * enemy.direction * speedMult;
-                    
-                    if (enemy.x <= enemy.patrolLeft) enemy.direction = 1;
-                    if (enemy.x + enemy.width >= enemy.patrolRight) enemy.direction = -1;
-                    
-                } else if (enemy.type === 'drone') {
-                    // Float and move unpredictably
+                    // Patrol at constant speed
                     enemy.x += enemy.speed * enemy.direction;
                     
-                    // Chase player slightly
-                    if (distToPlayer < 150) {
-                        enemy.x += (playerCenterX > enemy.x + enemy.width/2) ? 0.5 : -0.5;
+                    if (enemy.x <= enemy.patrolLeft) enemy.direction = 1;
+                    if (enemy.x + enemy.width >= enemy.patrolRight) enemy.direction = -1;
+                    
+                    // Shoot disc at player when in range
+                    if (enemy.shootTimer !== undefined) {
+                        enemy.shootTimer++;
+                        if (enemy.shootTimer >= enemy.shootCooldown && distToPlayer < 350) {
+                            shootEnemyDisc(enemyCenterX, enemyCenterY, playerCenterX, playerCenterY);
+                            enemy.shootTimer = 0;
+                        }
                     }
+                    
+                } else if (enemy.type === 'drone') {
+                    // Float and move
+                    enemy.x += enemy.speed * enemy.direction;
                     
                     if (enemy.x <= enemy.patrolLeft) enemy.direction = 1;
                     if (enemy.x + enemy.width >= enemy.patrolRight) enemy.direction = -1;
+                    
+                    // Shoot disc at player
+                    if (enemy.shootTimer !== undefined) {
+                        enemy.shootTimer++;
+                        const floatY = enemy.y + Math.sin(Date.now() / 120 + enemy.floatOffset) * 6;
+                        if (enemy.shootTimer >= enemy.shootCooldown && distToPlayer < 300) {
+                            shootEnemyDisc(enemyCenterX, floatY + enemy.height/2, playerCenterX, playerCenterY);
+                            enemy.shootTimer = 0;
+                        }
+                    }
                     
                 } else if (enemy.type === 'jumper') {
                     // Move and jump at player
@@ -1304,12 +1390,12 @@ game_html = """
                     if (enemy.x <= enemy.patrolLeft) enemy.direction = 1;
                     if (enemy.x + enemy.width >= enemy.patrolRight) enemy.direction = -1;
                     
-                    // Jump when player is close and on cooldown
+                    // Jump when player is close
                     enemy.jumpCooldown--;
-                    if (distToPlayer < 150 && enemy.onGround && enemy.jumpCooldown <= 0) {
-                        enemy.velY = -12;
+                    if (distToPlayer < 120 && enemy.onGround && enemy.jumpCooldown <= 0) {
+                        enemy.velY = -10;
                         enemy.onGround = false;
-                        enemy.jumpCooldown = 90; // 1.5 seconds cooldown
+                        enemy.jumpCooldown = 100;
                     }
                     
                     // Apply gravity
@@ -1317,7 +1403,6 @@ game_html = """
                         enemy.velY += 0.5;
                         enemy.y += enemy.velY;
                         
-                        // Check ground collision
                         platforms.forEach(p => {
                             if (enemy.y + enemy.height >= p.y && 
                                 enemy.y + enemy.height <= p.y + 20 &&
@@ -1331,11 +1416,100 @@ game_html = """
                     }
                 }
                 
-                // Check collision with player
-                if (checkCollision(player, enemy)) {
-                    gameOver();
+                // Check collision with player (damage instead of instant death in L2)
+                if (checkCollision(player, enemy) && invincibilityTimer <= 0) {
+                    playerHealth -= 5;
+                    invincibilityTimer = 60; // 1 second invincibility
+                    if (playerHealth <= 0) {
+                        gameOver();
+                    }
                 }
             });
+        }
+        
+        // Shoot an enemy disc towards the player
+        function shootEnemyDisc(fromX, fromY, toX, toY) {
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            
+            if (dist > 0) {
+                enemyDiscs.push({
+                    x: fromX,
+                    y: fromY,
+                    velX: (dx / dist) * ENEMY_DISC_SPEED,
+                    velY: (dy / dist) * ENEMY_DISC_SPEED,
+                    rotation: 0
+                });
+            }
+        }
+        
+        // Update enemy discs
+        function updateEnemyDiscs() {
+            for (let i = enemyDiscs.length - 1; i >= 0; i--) {
+                const eDisc = enemyDiscs[i];
+                eDisc.x += eDisc.velX;
+                eDisc.y += eDisc.velY;
+                eDisc.rotation += 0.2;
+                
+                // Remove if off screen
+                if (eDisc.x < cameraX - 50 || eDisc.x > cameraX + canvas.width + 50 ||
+                    eDisc.y < -50 || eDisc.y > canvas.height + 50) {
+                    enemyDiscs.splice(i, 1);
+                    continue;
+                }
+                
+                // Check collision with player
+                const discRect = { x: eDisc.x - ENEMY_DISC_SIZE, y: eDisc.y - ENEMY_DISC_SIZE, 
+                                   width: ENEMY_DISC_SIZE * 2, height: ENEMY_DISC_SIZE * 2 };
+                if (checkCollision(player, discRect) && invincibilityTimer <= 0) {
+                    playerHealth -= 3;
+                    invincibilityTimer = 45; // Brief invincibility
+                    enemyDiscs.splice(i, 1);
+                    if (playerHealth <= 0) {
+                        gameOver();
+                    }
+                }
+            }
+        }
+        
+        // Draw health bar (Level 2 only)
+        function drawHealthBar() {
+            if (currentLevel !== 2) return;
+            
+            const barWidth = 150;
+            const barHeight = 12;
+            const barX = canvas.width - barWidth - 20;
+            const barY = 50;
+            
+            // Background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(barX - 5, barY - 5, barWidth + 10, barHeight + 10);
+            
+            // Border
+            ctx.strokeStyle = '#FF0044';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(barX - 5, barY - 5, barWidth + 10, barHeight + 10);
+            
+            // Health bar fill
+            const healthPercent = playerHealth / MAX_HEALTH;
+            const healthWidth = barWidth * healthPercent;
+            
+            // Color based on health
+            let healthColor = '#00FF00';
+            if (healthPercent < 0.3) healthColor = '#FF0044';
+            else if (healthPercent < 0.6) healthColor = '#FFAA00';
+            
+            ctx.shadowColor = healthColor;
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = healthColor;
+            ctx.fillRect(barX, barY, healthWidth, barHeight);
+            ctx.shadowBlur = 0;
+            
+            // Health text
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = '10px "Courier New", monospace';
+            ctx.fillText(`HP: ${playerHealth}/${MAX_HEALTH}`, barX + 5, barY + 9);
         }
         
         // Draw NYC background
@@ -1907,6 +2081,11 @@ game_html = """
             animationFrame++;
             portal.animTimer++;
             
+            // Update invincibility timer
+            if (invincibilityTimer > 0) {
+                invincibilityTimer--;
+            }
+            
             updatePlayer();
             updateCoins();
             updateEnemies();
@@ -1915,6 +2094,7 @@ game_html = """
             // Update NYC enemies for Level 2
             if (currentLevel === 2) {
                 updateNYCEnemies();
+                updateEnemyDiscs();
             }
             
             checkFlag();
@@ -1989,6 +2169,9 @@ game_html = """
             // Level 2 enemies
             nycEnemies.forEach(drawNYCEnemy);
             
+            // Enemy discs (Level 2)
+            enemyDiscs.forEach(drawEnemyDisc);
+            
             drawFlag();
             drawPlayer();
             drawDisc();
@@ -1997,6 +2180,9 @@ game_html = """
             
             // UI is drawn without camera offset
             drawUI();
+            
+            // Health bar (Level 2)
+            drawHealthBar();
             
             // Draw progress bar at top
             drawProgressBar();
@@ -2590,6 +2776,14 @@ game_html = """
             disc.active = false;
             gameState = 'playing';
             cameraX = 0;
+            
+            // Reset health and enemy discs for Level 2
+            if (currentLevel === 2) {
+                playerHealth = MAX_HEALTH;
+            }
+            invincibilityTimer = 0;
+            enemyDiscs = [];
+            
             // Keep totalScore from previous levels
             loadLevelPlatforms();
             initCoins();
@@ -2713,5 +2907,6 @@ with col3:
     st.markdown("🏙️ **2 Levels**: The Grid → NYC!")
 with col4:
     st.markdown("🚪 **Reach** the portal!")
+
 
 
