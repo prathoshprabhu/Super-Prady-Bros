@@ -1,14 +1,14 @@
 """
-🍄 Super Prady Bros - Web Version 🍄
-A Mario-style platformer game that runs in your browser via Streamlit!
+⚡ TRON: ARES - The Grid Runner ⚡
+A Tron-inspired platformer game that runs in your browser via Streamlit!
 """
 
 import streamlit as st
 
 # Page configuration
 st.set_page_config(
-    page_title="🍄 Super Prady Bros",
-    page_icon="🍄",
+    page_title="⚡ TRON: ARES",
+    page_icon="⚡",
     layout="wide"
 )
 
@@ -18,45 +18,51 @@ st.markdown("""
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     .stApp {
-        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+        background: linear-gradient(180deg, #000000 0%, #0a0a0a 50%, #1a1a2e 100%);
     }
     .game-title {
         text-align: center;
-        font-family: 'Press Start 2P', cursive, monospace;
-        color: #ffd700;
-        text-shadow: 3px 3px 0px #c73659, 6px 6px 0px #1a1a2e;
+        font-family: 'Orbitron', 'Press Start 2P', monospace;
+        color: #00FFFF;
+        text-shadow: 0 0 20px #00FFFF, 0 0 40px #00FFFF, 0 0 60px #0088FF;
         font-size: 2.5rem;
         margin-bottom: 0.5rem;
+        letter-spacing: 8px;
     }
     .game-subtitle {
         text-align: center;
-        color: #87ceeb;
+        color: #FF6600;
         font-size: 1rem;
         margin-bottom: 1rem;
+        text-shadow: 0 0 10px #FF6600;
+        letter-spacing: 4px;
     }
     .controls-box {
-        background: rgba(255,255,255,0.1);
-        border-radius: 10px;
+        background: rgba(0, 255, 255, 0.05);
+        border: 1px solid rgba(0, 255, 255, 0.3);
+        border-radius: 2px;
         padding: 15px;
         margin: 10px auto;
         max-width: 600px;
         text-align: center;
-        color: white;
+        color: #00FFFF;
     }
     .controls-box kbd {
-        background: #333;
+        background: #000;
         padding: 5px 10px;
-        border-radius: 5px;
+        border-radius: 2px;
         margin: 0 5px;
-        border: 1px solid #555;
+        border: 1px solid #00FFFF;
+        color: #00FFFF;
+        text-shadow: 0 0 5px #00FFFF;
     }
 </style>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 """, unsafe_allow_html=True)
 
 # Title
-st.markdown('<h1 class="game-title">🍄 Super Prady Bros 🍄</h1>', unsafe_allow_html=True)
-st.markdown('<p class="game-subtitle">A Mario-Style Platformer Game</p>', unsafe_allow_html=True)
+st.markdown('<h1 class="game-title">⚡ TRON: ARES ⚡</h1>', unsafe_allow_html=True)
+st.markdown('<p class="game-subtitle">ENTER THE GRID</p>', unsafe_allow_html=True)
 
 # The game HTML/JavaScript
 game_html = """
@@ -78,13 +84,13 @@ game_html = """
         }
         #gameContainer {
             position: relative;
-            border-radius: 12px;
+            border-radius: 0;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 0 4px #ffd700;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.3), 0 0 0 2px #00FFFF;
         }
         #gameCanvas {
             display: block;
-            background: #87CEEB;
+            background: #000000;
         }
         #overlay {
             position: absolute;
@@ -96,25 +102,29 @@ game_html = """
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(0,0,0,0.7);
-            color: white;
+            background: rgba(0,0,0,0.9);
+            color: #00FFFF;
             font-size: 24px;
             text-align: center;
             display: none;
+            font-family: 'Courier New', monospace;
         }
         #overlay h1 {
-            font-size: 48px;
+            font-size: 42px;
             margin-bottom: 20px;
-            text-shadow: 3px 3px 0 #c73659;
+            text-shadow: 0 0 20px #00FFFF, 0 0 40px #00FFFF;
+            letter-spacing: 4px;
         }
         #overlay p {
             margin: 10px 0;
+            color: #FF6600;
         }
         #overlay .restart-hint {
             margin-top: 30px;
-            font-size: 18px;
-            color: #ffd700;
+            font-size: 16px;
+            color: #00FFFF;
             animation: pulse 1.5s infinite;
+            letter-spacing: 2px;
         }
         @keyframes pulse {
             0%, 100% { opacity: 1; }
@@ -158,7 +168,7 @@ game_html = """
         <div id="overlay">
             <h1 id="overlayTitle">🎉 YOU WIN! 🎉</h1>
             <p id="overlayScore">Coins: 0/10</p>
-            <p class="restart-hint">Press R to choose character & play again</p>
+            <p class="restart-hint">[ PRESS R TO SELECT PROGRAM AND REBOOT ]</p>
         </div>
         <div class="mobile-controls">
             <div style="display: flex; gap: 10px;">
@@ -185,24 +195,30 @@ game_html = """
         const WORLD_WIDTH = 3000;
         let cameraX = 0;
 
-        // Colors
+        // Colors - TRON aesthetic
         const COLORS = {
-            skyTop: '#87CEEB',
-            skyBottom: '#B0E0E6',
-            ground: '#8B5A2B',
-            grass: '#228B22',
-            platform: '#A0522D',
-            platformTop: '#32CD32',
-            player: '#DC143C',
-            playerFace: '#FFDAB9',
-            coin: '#FFD700',
-            coinShine: '#FFFFC8',
-            enemy: '#CC0000',
-            flagPole: '#8B4513',
-            flag: '#00FF7F',
-            cloud: '#FFFFFF',
-            text: '#FFFFFF',
-            textShadow: '#323232'
+            skyTop: '#000000',
+            skyBottom: '#0a0a1a',
+            ground: '#0a0a0a',
+            grass: '#00FFFF',
+            platform: '#111111',
+            platformTop: '#00FFFF',
+            player: '#00FFFF',
+            playerFace: '#000000',
+            coin: '#FF6600',
+            coinShine: '#FFAA44',
+            enemy: '#FF0044',
+            flagPole: '#333333',
+            flag: '#00FFFF',
+            cloud: 'rgba(0, 255, 255, 0.1)',
+            text: '#00FFFF',
+            textShadow: '#004444',
+            gridLine: 'rgba(0, 255, 255, 0.15)',
+            neonCyan: '#00FFFF',
+            neonOrange: '#FF6600',
+            neonRed: '#FF0044',
+            neonWhite: '#FFFFFF',
+            neonPurple: '#AA00FF'
         };
 
         // Game state
@@ -213,114 +229,71 @@ game_html = """
         let nameInputActive = false;
         let selectedCharacter = 0;
         
-        // Available characters - each with unique features
+        // Available characters - TRON inspired programs
         const characters = [
             { 
-                name: 'Mario', 
-                color: '#DC143C', 
-                hatColor: '#DC143C',
-                shirtColor: '#DC143C',
-                pantsColor: '#00008B',
-                description: 'The classic hero!',
-                gender: 'male',
-                skinTone: '#FFDAB9',
-                eyeColor: '#4169E1',
-                hairColor: '#5D4037',
-                hasHat: true,
-                hasMustache: true,
-                hairStyle: 'none'
+                name: 'ARES', 
+                circuitColor: '#00FFFF',
+                secondaryColor: '#0088FF',
+                description: 'Elite Grid Warrior',
+                helmetStyle: 'visor',
+                circuitPattern: 'angular'
             },
             { 
-                name: 'Luigi', 
-                color: '#228B22', 
-                hatColor: '#228B22',
-                shirtColor: '#228B22',
-                pantsColor: '#00008B',
-                description: 'Tall & brave!',
-                gender: 'male',
-                skinTone: '#FFDAB9',
-                eyeColor: '#228B22',
-                hairColor: '#5D4037',
-                hasHat: true,
-                hasMustache: true,
-                hairStyle: 'none'
+                name: 'SIREN', 
+                circuitColor: '#FF6600',
+                secondaryColor: '#FF3300',
+                description: 'Rogue Program',
+                helmetStyle: 'sleek',
+                circuitPattern: 'flowing'
             },
             { 
-                name: 'Peach', 
-                color: '#FFB6C1', 
-                hatColor: '#FFD700',
-                shirtColor: '#FFB6C1',
-                pantsColor: '#FF69B4',
-                description: 'Royal & graceful!',
-                gender: 'female',
-                skinTone: '#FFE4C4',
-                eyeColor: '#4169E1',
-                hairColor: '#FFD700',
-                hasHat: false,
-                hasMustache: false,
-                hairStyle: 'long',
-                hasCrown: true
+                name: 'QUORRA', 
+                circuitColor: '#FFFFFF',
+                secondaryColor: '#88CCFF',
+                description: 'The Last ISO',
+                helmetStyle: 'open',
+                circuitPattern: 'organic'
             },
             { 
-                name: 'Prady', 
-                color: '#FFD700', 
-                hatColor: '#FFD700',
-                shirtColor: '#FF8C00',
-                pantsColor: '#8B4513',
-                description: 'The golden champion!',
-                gender: 'male',
-                skinTone: '#D2691E',
-                eyeColor: '#8B4513',
-                hairColor: '#1a1a1a',
-                hasHat: true,
-                hasMustache: false,
-                hairStyle: 'short'
+                name: 'RINZLER', 
+                circuitColor: '#FF0044',
+                secondaryColor: '#AA0022',
+                description: 'Repurposed Warrior',
+                helmetStyle: 'full',
+                circuitPattern: 'aggressive'
             },
             { 
-                name: 'Rosa', 
-                color: '#00CED1', 
-                hatColor: '#00CED1',
-                shirtColor: '#40E0D0',
-                pantsColor: '#008B8B',
-                description: 'Swift & clever!',
-                gender: 'female',
-                skinTone: '#8B5A2B',
-                eyeColor: '#00CED1',
-                hairColor: '#1a1a1a',
-                hasHat: false,
-                hasMustache: false,
-                hairStyle: 'curly'
+                name: 'GEM', 
+                circuitColor: '#AA00FF',
+                secondaryColor: '#FF00AA',
+                description: 'Siren Program',
+                helmetStyle: 'elegant',
+                circuitPattern: 'symmetric'
             },
             { 
-                name: 'Shadow', 
-                color: '#4B0082', 
-                hatColor: '#4B0082',
-                shirtColor: '#2F0052',
-                pantsColor: '#1a1a2e',
-                description: 'Dark & mysterious!',
-                gender: 'male',
-                skinTone: '#C9A86C',
-                eyeColor: '#9400D3',
-                hairColor: '#1a1a1a',
-                hasHat: true,
-                hasMustache: false,
-                hairStyle: 'spiky'
+                name: 'CASTOR', 
+                circuitColor: '#FFFFFF',
+                secondaryColor: '#AAAAAA',
+                description: 'End of Line Club',
+                helmetStyle: 'stylish',
+                circuitPattern: 'flashy'
             },
             { 
-                name: 'Daisy', 
-                color: '#FFA500', 
-                hatColor: '#FFA500',
-                shirtColor: '#FFD700',
-                pantsColor: '#FF8C00',
-                description: 'Sporty & fun!',
-                gender: 'female',
-                skinTone: '#FFDAB9',
-                eyeColor: '#228B22',
-                hairColor: '#8B4513',
-                hasHat: false,
-                hasMustache: false,
-                hairStyle: 'ponytail',
-                hasCrown: true
+                name: 'FLYNN', 
+                circuitColor: '#00FFFF',
+                secondaryColor: '#00AAFF',
+                description: 'The Creator',
+                helmetStyle: 'classic',
+                circuitPattern: 'legacy'
+            },
+            { 
+                name: 'YORI', 
+                circuitColor: '#00FFFF',
+                secondaryColor: '#00FF88',
+                description: 'System Monitor',
+                helmetStyle: 'feminine',
+                circuitPattern: 'elegant'
             }
         ];
 
@@ -513,420 +486,296 @@ game_html = """
             overlay.style.display = 'none';
         }
 
-        // Draw gradient sky
+        // Draw TRON grid background
         function drawSky() {
+            // Dark gradient background
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, COLORS.skyTop);
-            gradient.addColorStop(1, COLORS.skyBottom);
+            gradient.addColorStop(0, '#000000');
+            gradient.addColorStop(0.5, '#050510');
+            gradient.addColorStop(1, '#0a0a1a');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-
-        // Draw hills
-        function drawHills() {
-            // Back hills
-            ctx.fillStyle = '#228B22';
-            ctx.beginPath();
-            ctx.moveTo(0, 450);
-            ctx.lineTo(100, 380);
-            ctx.lineTo(200, 420);
-            ctx.lineTo(350, 350);
-            ctx.lineTo(450, 400);
-            ctx.lineTo(600, 320);
-            ctx.lineTo(750, 380);
-            ctx.lineTo(900, 340);
-            ctx.lineTo(900, 450);
-            ctx.closePath();
-            ctx.fill();
-
-            // Front hills
-            ctx.fillStyle = '#32B432';
-            ctx.beginPath();
-            ctx.moveTo(0, 450);
-            ctx.lineTo(150, 400);
-            ctx.lineTo(300, 430);
-            ctx.lineTo(500, 380);
-            ctx.lineTo(700, 420);
-            ctx.lineTo(850, 390);
-            ctx.lineTo(900, 430);
-            ctx.lineTo(900, 450);
-            ctx.closePath();
-            ctx.fill();
-        }
-
-        // Draw clouds
-        function drawClouds() {
-            ctx.fillStyle = COLORS.cloud;
-            clouds.forEach(cloud => {
-                const { x, y, size } = cloud;
+            
+            // Draw perspective grid floor
+            ctx.strokeStyle = COLORS.gridLine;
+            ctx.lineWidth = 1;
+            
+            // Horizontal lines (perspective)
+            for (let y = 300; y < canvas.height; y += 20) {
+                const intensity = (y - 300) / 200;
+                ctx.strokeStyle = `rgba(0, 255, 255, ${0.05 + intensity * 0.15})`;
                 ctx.beginPath();
-                ctx.arc(x, y, size, 0, Math.PI * 2);
-                ctx.arc(x + size, y - size/3, size * 0.8, 0, Math.PI * 2);
-                ctx.arc(x + size * 2, y, size * 0.9, 0, Math.PI * 2);
-                ctx.arc(x + size, y + size/4, size * 0.7, 0, Math.PI * 2);
-                ctx.fill();
-            });
-        }
-
-        // Draw platform
-        function drawPlatform(p) {
-            if (p.isGround) {
-                ctx.fillStyle = COLORS.ground;
-                ctx.fillRect(p.x, p.y, p.width, p.height);
-                ctx.fillStyle = COLORS.grass;
-                ctx.fillRect(p.x, p.y, p.width, 8);
-                
-                // Grass blades
-                for (let i = p.x; i < p.x + p.width; i += 8) {
-                    ctx.strokeStyle = COLORS.grass;
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(i, p.y);
-                    ctx.lineTo(i - 2, p.y - 5);
-                    ctx.stroke();
-                }
-            } else {
-                ctx.fillStyle = COLORS.platform;
-                ctx.fillRect(p.x, p.y, p.width, p.height);
-                ctx.fillStyle = COLORS.platformTop;
-                ctx.fillRect(p.x, p.y, p.width, 6);
-                
-                // Brick pattern
-                ctx.strokeStyle = '#B4663D';
-                for (let row = 6; row < p.height; row += 12) {
-                    const offset = (row % 24 === 6) ? 0 : 15;
-                    for (let col = -offset; col < p.width; col += 30) {
-                        ctx.strokeRect(p.x + col, p.y + row, 28, 10);
-                    }
-                }
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
+            // Vertical grid lines
+            const gridSpacing = 80;
+            for (let x = -gridSpacing; x < canvas.width + gridSpacing; x += gridSpacing) {
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+                ctx.beginPath();
+                ctx.moveTo(x, 300);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
             }
         }
 
-        // Draw player with enhanced graphics and unique character features
+        // Draw distant city/structures (TRON style)
+        function drawHills() {
+            // Distant buildings/structures silhouette
+            ctx.fillStyle = '#0a0a15';
+            ctx.beginPath();
+            ctx.moveTo(0, 350);
+            // Create angular building shapes
+            for (let x = 0; x < canvas.width; x += 60) {
+                const height = 280 + Math.sin(x * 0.05) * 40 + Math.random() * 20;
+                ctx.lineTo(x, height);
+                ctx.lineTo(x + 30, height - 20);
+                ctx.lineTo(x + 60, height + 10);
+            }
+            ctx.lineTo(canvas.width, 350);
+            ctx.lineTo(canvas.width, canvas.height);
+            ctx.lineTo(0, canvas.height);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Glowing edges on buildings
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        // Draw data streams (instead of clouds)
+        function drawClouds() {
+            ctx.strokeStyle = COLORS.cloud;
+            ctx.lineWidth = 2;
+            clouds.forEach(cloud => {
+                const { x, y, size } = cloud;
+                // Draw data stream / light ribbon
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + size * 2, y);
+                ctx.lineTo(x + size * 2.5, y + 3);
+                ctx.lineTo(x + size * 0.5, y + 3);
+                ctx.closePath();
+                ctx.strokeStyle = `rgba(0, 255, 255, ${0.2 + Math.sin(Date.now() / 500 + x) * 0.1})`;
+                ctx.stroke();
+            });
+        }
+
+        // Draw platform - TRON style
+        function drawPlatform(p) {
+            // Dark platform body
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(p.x, p.y, p.width, p.height);
+            
+            // Glowing top edge
+            ctx.shadowColor = COLORS.neonCyan;
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = COLORS.neonCyan;
+            ctx.fillRect(p.x, p.y, p.width, 3);
+            ctx.shadowBlur = 0;
+            
+            // Circuit pattern on platform
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            
+            // Horizontal circuit lines
+            for (let y = p.y + 8; y < p.y + p.height - 4; y += 8) {
+                ctx.beginPath();
+                ctx.moveTo(p.x + 4, y);
+                ctx.lineTo(p.x + p.width - 4, y);
+                ctx.stroke();
+            }
+            
+            // Vertical accent lines at edges
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
+            ctx.beginPath();
+            ctx.moveTo(p.x + 2, p.y + 3);
+            ctx.lineTo(p.x + 2, p.y + p.height);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(p.x + p.width - 2, p.y + 3);
+            ctx.lineTo(p.x + p.width - 2, p.y + p.height);
+            ctx.stroke();
+            
+            // Corner accents
+            ctx.fillStyle = COLORS.neonCyan;
+            ctx.fillRect(p.x, p.y + p.height - 2, 6, 2);
+            ctx.fillRect(p.x + p.width - 6, p.y + p.height - 2, 6, 2);
+        }
+
+        // Draw player - TRON 8-bit style with circuit patterns
         function drawPlayer() {
             const { x, y, width, height, facingRight } = player;
             const char = characters[selectedCharacter];
-            const isFemale = char.gender === 'female';
-            const skinTone = char.skinTone || '#FFDAB9';
-            const skinDark = shadeColor(skinTone, -20);
-            const hairColor = char.hairColor || '#5D4037';
-            const eyeColor = char.eyeColor || '#4169E1';
+            const circuitColor = char.circuitColor || '#00FFFF';
+            const secondaryColor = char.secondaryColor || '#0088FF';
             
             // Draw player name above character
             if (playerName) {
                 ctx.save();
-                ctx.font = 'bold 14px Arial';
+                ctx.font = 'bold 12px "Courier New", monospace';
                 ctx.textAlign = 'center';
-                const nameWidth = ctx.measureText(playerName).width + 16;
+                const nameWidth = ctx.measureText(playerName).width + 20;
                 
-                ctx.fillStyle = 'rgba(0,0,0,0.4)';
-                ctx.beginPath();
-                ctx.roundRect(x + width/2 - nameWidth/2 + 2, y - 32, nameWidth, 20, 5);
-                ctx.fill();
+                // Dark background with circuit border
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                ctx.fillRect(x + width/2 - nameWidth/2, y - 28, nameWidth, 18);
                 
-                const nameBg = ctx.createLinearGradient(0, y - 34, 0, y - 14);
-                nameBg.addColorStop(0, 'rgba(0,0,0,0.8)');
-                nameBg.addColorStop(1, 'rgba(30,30,30,0.9)');
-                ctx.fillStyle = nameBg;
-                ctx.beginPath();
-                ctx.roundRect(x + width/2 - nameWidth/2, y - 34, nameWidth, 20, 5);
-                ctx.fill();
-                ctx.strokeStyle = char.color;
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                
-                ctx.shadowColor = char.color;
+                // Glowing border
+                ctx.shadowColor = circuitColor;
                 ctx.shadowBlur = 8;
-                ctx.fillStyle = '#FFD700';
-                ctx.fillText(playerName, x + width/2, y - 19);
+                ctx.strokeStyle = circuitColor;
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x + width/2 - nameWidth/2, y - 28, nameWidth, 18);
+                ctx.shadowBlur = 0;
+                
+                // Name text with glow
+                ctx.shadowColor = circuitColor;
+                ctx.shadowBlur = 6;
+                ctx.fillStyle = circuitColor;
+                ctx.fillText(playerName.toUpperCase(), x + width/2, y - 14);
                 ctx.shadowBlur = 0;
                 ctx.restore();
             }
             
-            // Shadow on ground
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            // Glow effect on ground
+            ctx.shadowColor = circuitColor;
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = `rgba(${hexToRgb(circuitColor)}, 0.3)`;
             ctx.beginPath();
-            ctx.ellipse(x + width/2, y + height + 2, 16, 5, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + width/2, y + height + 2, 14, 4, 0, 0, Math.PI * 2);
             ctx.fill();
+            ctx.shadowBlur = 0;
             
-            // Hair behind head for long styles
-            if (char.hairStyle === 'long') {
-                ctx.fillStyle = hairColor;
-                ctx.beginPath();
-                ctx.ellipse(x + width/2, y + 15, 16, 20, 0, 0, Math.PI * 2);
-                ctx.fill();
-                const hairSide = facingRight ? x - 2 : x + width + 2;
-                ctx.beginPath();
-                ctx.moveTo(hairSide, y + 10);
-                ctx.quadraticCurveTo(hairSide + (facingRight ? -5 : 5), y + 35, hairSide + (facingRight ? 3 : -3), y + 45);
-                ctx.quadraticCurveTo(hairSide + (facingRight ? 6 : -6), y + 35, hairSide + (facingRight ? 4 : -4), y + 15);
-                ctx.fill();
-            } else if (char.hairStyle === 'curly') {
-                ctx.fillStyle = hairColor;
-                for (let i = 0; i < 8; i++) {
-                    const angle = (i / 8) * Math.PI * 2;
-                    const hx = x + width/2 + Math.cos(angle) * 14;
-                    const hy = y + 8 + Math.sin(angle) * 12;
-                    ctx.beginPath();
-                    ctx.arc(hx, hy, 6, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
+            // === 8-BIT TRON BODY ===
+            const px = 3; // pixel size for 8-bit look
             
-            // Body
-            const bodyGrad = ctx.createLinearGradient(x + 4, y + 18, x + 32, y + 45);
-            bodyGrad.addColorStop(0, char.shirtColor);
-            bodyGrad.addColorStop(0.5, shadeColor(char.shirtColor, -15));
-            bodyGrad.addColorStop(1, shadeColor(char.shirtColor, -30));
-            ctx.fillStyle = bodyGrad;
+            // Body base (dark suit)
+            ctx.fillStyle = '#0a0a0a';
             
-            if (isFemale) {
-                ctx.beginPath();
-                ctx.moveTo(x + 8, y + 18);
-                ctx.lineTo(x + 28, y + 18);
-                ctx.lineTo(x + 32, y + 42);
-                ctx.lineTo(x + 4, y + 42);
-                ctx.closePath();
-                ctx.fill();
-                ctx.beginPath();
-                for (let i = 0; i < 5; i++) {
-                    ctx.arc(x + 6 + i * 6, y + 42, 4, 0, Math.PI);
-                }
-                ctx.fill();
-            } else {
-                ctx.beginPath();
-                ctx.roundRect(x + 5, y + 18, 26, 25, 4);
-                ctx.fill();
-                ctx.fillStyle = char.pantsColor;
-                ctx.fillRect(x + 8, y + 18, 4, 10);
-                ctx.fillRect(x + 24, y + 18, 4, 10);
-                ctx.fillStyle = shadeColor(char.pantsColor, -20);
-                ctx.fillRect(x + 5, y + 38, 26, 4);
-                ctx.fillStyle = '#FFD700';
-                ctx.beginPath();
-                ctx.roundRect(x + 14, y + 38, 8, 4, 1);
-                ctx.fill();
-            }
+            // Torso (blocky 8-bit)
+            ctx.fillRect(x + 6, y + 14, 24, 28);
             
-            ctx.fillStyle = 'rgba(255,255,255,0.2)';
-            ctx.beginPath();
-            ctx.roundRect(x + 6, y + 19, 8, 12, 2);
-            ctx.fill();
-            
-            // Head
-            const headGrad = ctx.createRadialGradient(x + width/2 - 3, y + 8, 0, x + width/2, y + 11, 13);
-            headGrad.addColorStop(0, shadeColor(skinTone, 10));
-            headGrad.addColorStop(0.7, skinTone);
-            headGrad.addColorStop(1, skinDark);
-            ctx.fillStyle = headGrad;
-            ctx.beginPath();
-            ctx.ellipse(x + width/2, y + 11, 12, 12, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Blush
-            if (isFemale) {
-                ctx.fillStyle = 'rgba(255,150,150,0.4)';
-                ctx.beginPath();
-                ctx.ellipse(x + 8, y + 14, 4, 3, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.ellipse(x + 28, y + 14, 4, 3, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // Ear
-            const earX = facingRight ? x + 5 : x + 31;
-            ctx.fillStyle = skinTone;
-            ctx.beginPath();
-            ctx.ellipse(earX, y + 12, 3, 4, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Hat or Hair
-            if (char.hasHat) {
-                const hatGrad = ctx.createLinearGradient(x + 4, y, x + 32, y + 12);
-                hatGrad.addColorStop(0, shadeColor(char.hatColor, 20));
-                hatGrad.addColorStop(0.5, char.hatColor);
-                hatGrad.addColorStop(1, shadeColor(char.hatColor, -25));
-                ctx.fillStyle = hatGrad;
-                ctx.beginPath();
-                ctx.roundRect(x + 4, y - 2, 28, 12, 3);
-                ctx.fill();
-                if (facingRight) {
-                    ctx.beginPath();
-                    ctx.roundRect(x + 22, y + 4, 14, 8, 2);
-                    ctx.fill();
-                } else {
-                    ctx.beginPath();
-                    ctx.roundRect(x, y + 4, 14, 8, 2);
-                    ctx.fill();
-                }
-                ctx.fillStyle = '#FFF';
-                ctx.beginPath();
-                ctx.arc(x + width/2, y + 4, 5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = char.hatColor;
-                ctx.font = 'bold 7px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(char.name[0], x + width/2, y + 7);
-                ctx.textAlign = 'left';
-            } else if (char.hairStyle === 'short') {
-                ctx.fillStyle = hairColor;
-                ctx.beginPath();
-                ctx.ellipse(x + width/2, y + 2, 10, 8, 0, 0, Math.PI * 2);
-                ctx.fill();
-            } else if (char.hairStyle === 'spiky') {
-                ctx.fillStyle = hairColor;
-                for (let i = 0; i < 5; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(x + 8 + i * 5, y + 5);
-                    ctx.lineTo(x + 10 + i * 5, y - 6);
-                    ctx.lineTo(x + 12 + i * 5, y + 5);
-                    ctx.fill();
-                }
-            } else if (char.hairStyle === 'ponytail') {
-                ctx.fillStyle = hairColor;
-                ctx.beginPath();
-                ctx.ellipse(x + width/2, y + 2, 12, 8, 0, 0, Math.PI * 2);
-                ctx.fill();
-                const tailX = facingRight ? x + 30 : x + 6;
-                ctx.beginPath();
-                ctx.moveTo(tailX, y);
-                ctx.quadraticCurveTo(tailX + (facingRight ? 10 : -10), y + 5, tailX + (facingRight ? 8 : -8), y + 25);
-                ctx.quadraticCurveTo(tailX + (facingRight ? 5 : -5), y + 20, tailX + (facingRight ? 2 : -2), y + 5);
-                ctx.fill();
-            }
-            
-            // Crown
-            if (char.hasCrown) {
-                ctx.fillStyle = '#FFD700';
-                ctx.beginPath();
-                ctx.moveTo(x + 8, y - 5);
-                ctx.lineTo(x + 10, y - 15);
-                ctx.lineTo(x + 14, y - 8);
-                ctx.lineTo(x + 18, y - 18);
-                ctx.lineTo(x + 22, y - 8);
-                ctx.lineTo(x + 26, y - 15);
-                ctx.lineTo(x + 28, y - 5);
-                ctx.closePath();
-                ctx.fill();
-                ctx.fillStyle = '#FF1493';
-                ctx.beginPath();
-                ctx.arc(x + 18, y - 12, 3, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // Eyes
-            const eyeX = facingRight ? x + 21 : x + 13;
-            const eyeSize = isFemale ? 5 : 4;
-            ctx.fillStyle = '#FFF';
-            ctx.beginPath();
-            ctx.ellipse(eyeX, y + 10, eyeSize, eyeSize + 1, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = eyeColor;
-            ctx.beginPath();
-            ctx.arc(eyeX + (facingRight ? 1 : -1), y + 10, 2.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.arc(eyeX + (facingRight ? 1 : -1), y + 10, 1.2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#FFF';
-            ctx.beginPath();
-            ctx.arc(eyeX + (facingRight ? 2 : 0), y + 9, 0.8, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Eyelashes
-            if (isFemale) {
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.moveTo(eyeX - 3, y + 6);
-                ctx.lineTo(eyeX - 4, y + 4);
-                ctx.moveTo(eyeX, y + 5);
-                ctx.lineTo(eyeX, y + 3);
-                ctx.stroke();
-            }
-            
-            // Eyebrow
-            ctx.strokeStyle = hairColor;
-            ctx.lineWidth = isFemale ? 1.5 : 2;
-            ctx.beginPath();
-            ctx.moveTo(eyeX - 4, y + 4);
-            ctx.quadraticCurveTo(eyeX, y + 2, eyeX + 4, y + 4);
-            ctx.stroke();
-            ctx.lineWidth = 1;
-            
-            // Nose
-            ctx.fillStyle = skinDark;
-            ctx.beginPath();
-            ctx.ellipse(x + width/2 + (facingRight ? 3 : -3), y + 13, isFemale ? 2 : 3, 2, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Smile! 😊
-            ctx.strokeStyle = '#C0392B';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(x + width/2, y + 14, 5, 0.2, Math.PI - 0.2);
-            ctx.stroke();
-            ctx.lineWidth = 1;
-            
-            // Mustache or Lipstick
-            if (char.hasMustache) {
-                const mustacheGrad = ctx.createLinearGradient(x + 9, y + 15, x + 27, y + 20);
-                mustacheGrad.addColorStop(0, hairColor);
-                mustacheGrad.addColorStop(1, shadeColor(hairColor, -30));
-                ctx.fillStyle = mustacheGrad;
-                ctx.beginPath();
-                ctx.moveTo(x + width/2, y + 16);
-                ctx.quadraticCurveTo(x + 8, y + 17, x + 6, y + 21);
-                ctx.quadraticCurveTo(x + 10, y + 19, x + width/2, y + 18);
-                ctx.quadraticCurveTo(x + 26, y + 19, x + 30, y + 21);
-                ctx.quadraticCurveTo(x + 28, y + 17, x + width/2, y + 16);
-                ctx.fill();
-            }
-            if (isFemale) {
-                ctx.fillStyle = '#E74C3C';
-                ctx.beginPath();
-                ctx.ellipse(x + width/2, y + 18, 4, 2, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            // Head (blocky)
+            ctx.fillRect(x + 8, y, 20, 16);
             
             // Legs
-            const legGrad = ctx.createLinearGradient(x + 7, y + 42, x + 16, y + 48);
-            legGrad.addColorStop(0, isFemale ? skinTone : char.pantsColor);
-            legGrad.addColorStop(1, isFemale ? skinDark : shadeColor(char.pantsColor, -30));
-            ctx.fillStyle = legGrad;
-            ctx.beginPath();
-            ctx.roundRect(x + 7, y + 44, 10, 8, 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.roundRect(x + 19, y + 44, 10, 8, 2);
-            ctx.fill();
+            ctx.fillRect(x + 8, y + 42, 8, 12);
+            ctx.fillRect(x + 20, y + 42, 8, 12);
             
-            // Shoes
-            const shoeColor = isFemale ? char.color : '#8B4513';
-            const shoeGrad = ctx.createRadialGradient(x + 10, y + 50, 0, x + 12, y + 52, 10);
-            shoeGrad.addColorStop(0, shadeColor(shoeColor, 20));
-            shoeGrad.addColorStop(0.6, shoeColor);
-            shoeGrad.addColorStop(1, shadeColor(shoeColor, -30));
-            ctx.fillStyle = shoeGrad;
-            ctx.beginPath();
-            ctx.ellipse(x + 11, y + 52, 8, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(x + 25, y + 52, 8, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // === CIRCUIT LINES (glowing) ===
+            ctx.shadowColor = circuitColor;
+            ctx.shadowBlur = 8;
+            ctx.strokeStyle = circuitColor;
+            ctx.fillStyle = circuitColor;
+            ctx.lineWidth = 2;
             
-            ctx.fillStyle = 'rgba(255,255,255,0.3)';
-            ctx.beginPath();
-            ctx.ellipse(x + 9, y + 50, 3, 2, -0.3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            if (isFemale) {
-                ctx.fillStyle = shadeColor(shoeColor, -30);
-                ctx.fillRect(x + 8, y + 52, 3, 5);
-                ctx.fillRect(x + 22, y + 52, 3, 5);
+            // Helmet visor
+            if (char.helmetStyle === 'full' || char.helmetStyle === 'visor') {
+                // T-shaped visor
+                ctx.fillRect(x + 10, y + 6, 16, 3);
+                ctx.fillRect(x + 16, y + 6, 4, 8);
+            } else if (char.helmetStyle === 'sleek' || char.helmetStyle === 'elegant') {
+                // Curved visor line
+                ctx.beginPath();
+                ctx.moveTo(x + 10, y + 8);
+                ctx.lineTo(x + 26, y + 8);
+                ctx.stroke();
+                // Eye dots
+                ctx.fillRect(x + 12, y + 6, 3, 3);
+                ctx.fillRect(x + 21, y + 6, 3, 3);
+            } else {
+                // Open face with eye line
+                ctx.fillRect(x + 10, y + 5, 16, 2);
             }
+            
+            // Torso circuits based on pattern
+            if (char.circuitPattern === 'angular' || char.circuitPattern === 'aggressive') {
+                // Angular circuit pattern
+                ctx.beginPath();
+                ctx.moveTo(x + 18, y + 16);
+                ctx.lineTo(x + 18, y + 24);
+                ctx.lineTo(x + 10, y + 30);
+                ctx.lineTo(x + 10, y + 38);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 18, y + 24);
+                ctx.lineTo(x + 26, y + 30);
+                ctx.lineTo(x + 26, y + 38);
+                ctx.stroke();
+            } else if (char.circuitPattern === 'flowing' || char.circuitPattern === 'organic') {
+                // Flowing pattern
+                ctx.beginPath();
+                ctx.moveTo(x + 18, y + 16);
+                ctx.lineTo(x + 18, y + 38);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 10, y + 22);
+                ctx.lineTo(x + 26, y + 22);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 10, y + 32);
+                ctx.lineTo(x + 26, y + 32);
+                ctx.stroke();
+            } else if (char.circuitPattern === 'symmetric' || char.circuitPattern === 'elegant') {
+                // Symmetric V pattern
+                ctx.beginPath();
+                ctx.moveTo(x + 8, y + 18);
+                ctx.lineTo(x + 18, y + 30);
+                ctx.lineTo(x + 28, y + 18);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 18, y + 30);
+                ctx.lineTo(x + 18, y + 40);
+                ctx.stroke();
+            } else {
+                // Default/legacy pattern
+                ctx.beginPath();
+                ctx.moveTo(x + 18, y + 16);
+                ctx.lineTo(x + 18, y + 40);
+                ctx.stroke();
+                ctx.fillRect(x + 8, y + 26, 20, 2);
+            }
+            
+            // Shoulder accents
+            ctx.fillRect(x + 4, y + 16, 4, 2);
+            ctx.fillRect(x + 28, y + 16, 4, 2);
+            
+            // Arm circuits
+            ctx.fillRect(x + 4, y + 20, 2, 16);
+            ctx.fillRect(x + 30, y + 20, 2, 16);
+            
+            // Leg circuits
+            ctx.fillRect(x + 10, y + 44, 2, 8);
+            ctx.fillRect(x + 24, y + 44, 2, 8);
+            
+            // Boot tops
+            ctx.fillRect(x + 8, y + 50, 8, 2);
+            ctx.fillRect(x + 20, y + 50, 8, 2);
+            
+            // Identity disc on back (secondary color)
+            ctx.strokeStyle = secondaryColor;
+            ctx.shadowColor = secondaryColor;
+            ctx.beginPath();
+            if (facingRight) {
+                ctx.arc(x + 6, y + 26, 5, 0, Math.PI * 2);
+            } else {
+                ctx.arc(x + 30, y + 26, 5, 0, Math.PI * 2);
+            }
+            ctx.stroke();
+            
+            ctx.shadowBlur = 0;
+        }
+        
+        // Helper to convert hex to rgb
+        function hexToRgb(hex) {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? 
+                `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : 
+                '0, 255, 255';
         }
         
         // Helper function to shade colors
@@ -940,303 +789,270 @@ game_html = """
             return '#' + (0x1000000 + R * 0x10000 + G * 0x100 + B).toString(16).slice(1);
         }
 
-        // Draw coin
+        // Draw energy bit (TRON style coin)
         function drawCoin(coin) {
             if (coin.collected) return;
             
             const floatY = coin.y + Math.sin(Date.now() / 200 + coin.offset) * 3;
-            const widthFactor = Math.abs(Math.sin(coin.frame * Math.PI / 4));
-            const displayWidth = Math.max(4, 22 * widthFactor);
-            const xOffset = (22 - displayWidth) / 2;
+            const pulse = 0.8 + Math.sin(Date.now() / 150 + coin.offset) * 0.2;
             
-            ctx.fillStyle = COLORS.coin;
+            // Outer glow
+            ctx.shadowColor = COLORS.neonOrange;
+            ctx.shadowBlur = 15 * pulse;
+            
+            // Diamond/bit shape (8-bit style)
+            ctx.fillStyle = COLORS.neonOrange;
             ctx.beginPath();
-            ctx.ellipse(coin.x + 11, floatY + 11, displayWidth/2, 11, 0, 0, Math.PI * 2);
+            ctx.moveTo(coin.x + 11, floatY);
+            ctx.lineTo(coin.x + 22, floatY + 11);
+            ctx.lineTo(coin.x + 11, floatY + 22);
+            ctx.lineTo(coin.x, floatY + 11);
+            ctx.closePath();
             ctx.fill();
             
-            // Shine
-            if (displayWidth > 10) {
-                ctx.fillStyle = COLORS.coinShine;
-                ctx.beginPath();
-                ctx.ellipse(coin.x + 8, floatY + 6, displayWidth/6, 4, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            // Inner diamond
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.moveTo(coin.x + 11, floatY + 4);
+            ctx.lineTo(coin.x + 18, floatY + 11);
+            ctx.lineTo(coin.x + 11, floatY + 18);
+            ctx.lineTo(coin.x + 4, floatY + 11);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Center dot
+            ctx.fillStyle = COLORS.neonOrange;
+            ctx.fillRect(coin.x + 9, floatY + 9, 4, 4);
+            
+            ctx.shadowBlur = 0;
         }
 
-        // Draw enemy - Scary red demon monster
+        // Draw enemy - TRON corrupted program / virus
         function drawEnemy(enemy) {
             const { x, y, width, height, animFrame } = enemy;
-            const bounce = Math.sin(Date.now() / 150) * 2;
+            const glitch = Math.sin(Date.now() / 100) * 2;
+            const pulse = 0.7 + Math.sin(Date.now() / 150) * 0.3;
             
-            // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            // Ground glow
+            ctx.shadowColor = COLORS.neonRed;
+            ctx.shadowBlur = 12;
+            ctx.fillStyle = `rgba(255, 0, 68, 0.4)`;
             ctx.beginPath();
-            ctx.ellipse(x + width/2, y + height + 2, width/2.5, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Body - Dark red with gradient effect
-            const bodyGrad = ctx.createRadialGradient(x + width/2, y + height/2, 0, x + width/2, y + height/2, width/2);
-            bodyGrad.addColorStop(0, '#FF2020');
-            bodyGrad.addColorStop(0.7, '#AA0000');
-            bodyGrad.addColorStop(1, '#660000');
-            ctx.fillStyle = bodyGrad;
-            ctx.beginPath();
-            ctx.ellipse(x + width/2, y + height/2 + 3 + bounce, width/2 + 2, height/2, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + width/2, y + height + 2, width/2, 4, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Spiky head/horns
-            ctx.fillStyle = '#880000';
-            // Left horn
-            ctx.beginPath();
-            ctx.moveTo(x + 5, y + 10);
-            ctx.lineTo(x - 3, y - 8);
-            ctx.lineTo(x + 12, y + 5);
-            ctx.closePath();
-            ctx.fill();
-            // Right horn
-            ctx.beginPath();
-            ctx.moveTo(x + width - 5, y + 10);
-            ctx.lineTo(x + width + 3, y - 8);
-            ctx.lineTo(x + width - 12, y + 5);
-            ctx.closePath();
-            ctx.fill();
+            // Body base (dark)
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(x + 4, y + 4, width - 8, height - 8);
             
-            // Glowing angry eyes
-            ctx.fillStyle = '#FFFF00';
-            ctx.shadowColor = '#FF0000';
-            ctx.shadowBlur = 10;
+            // Corrupted circuit lines (red, glitchy)
+            ctx.shadowColor = COLORS.neonRed;
+            ctx.shadowBlur = 10 * pulse;
+            ctx.strokeStyle = COLORS.neonRed;
+            ctx.fillStyle = COLORS.neonRed;
+            ctx.lineWidth = 2;
+            
+            // Glitchy head pattern
+            ctx.fillRect(x + 8 + glitch, y + 6, 22, 3);
+            ctx.fillRect(x + 14, y + 6, 3, 10);
+            
+            // Body circuits (corrupted/broken pattern)
             ctx.beginPath();
-            ctx.ellipse(x + 10, y + 15 + bounce, 6, 5, -0.3, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.moveTo(x + 6, y + 16);
+            ctx.lineTo(x + 18 + glitch * 0.5, y + 20);
+            ctx.lineTo(x + 6 + glitch, y + 30);
+            ctx.stroke();
+            
             ctx.beginPath();
-            ctx.ellipse(x + width - 10, y + 15 + bounce, 6, 5, 0.3, 0, Math.PI * 2);
+            ctx.moveTo(x + width - 6, y + 16);
+            ctx.lineTo(x + width - 18 - glitch * 0.5, y + 20);
+            ctx.lineTo(x + width - 6 - glitch, y + 30);
+            ctx.stroke();
+            
+            // Center corruption symbol
+            ctx.fillRect(x + 16, y + 18, 6, 6);
+            
+            // Glitchy legs
+            ctx.fillRect(x + 8, y + height - 12, 3, 10);
+            ctx.fillRect(x + width - 11, y + height - 12 + (animFrame === 0 ? 2 : 0), 3, 10);
+            
+            // Error/corruption marks
+            ctx.fillRect(x + 4, y + height - 4, 8, 2);
+            ctx.fillRect(x + width - 12, y + height - 4, 8, 2);
+            
+            // Static/noise effect (random pixels)
+            ctx.fillStyle = 'rgba(255, 0, 68, 0.5)';
+            for (let i = 0; i < 5; i++) {
+                const nx = x + 6 + Math.random() * (width - 12);
+                const ny = y + 6 + Math.random() * (height - 12);
+                ctx.fillRect(nx, ny, 2, 2);
+            }
+            
+            ctx.shadowBlur = 0;
+        }
+
+        // Draw TRON tank/sentinel (replaces turtle)
+        function drawTurtle(turtle) {
+            const { x, y, width, height, direction, animFrame, inShell } = turtle;
+            const hover = Math.sin(Date.now() / 200) * 2;
+            const pulse = 0.7 + Math.sin(Date.now() / 180) * 0.3;
+            
+            // Ground glow
+            ctx.shadowColor = COLORS.neonPurple;
+            ctx.shadowBlur = 12;
+            ctx.fillStyle = `rgba(170, 0, 255, 0.4)`;
+            ctx.beginPath();
+            ctx.ellipse(x + width/2, y + height + 2, width/2, 4, 0, 0, Math.PI * 2);
             ctx.fill();
             ctx.shadowBlur = 0;
             
-            // Evil red pupils
-            ctx.fillStyle = '#FF0000';
-            ctx.beginPath();
-            ctx.arc(x + 11, y + 16 + bounce, 3, 0, Math.PI * 2);
-            ctx.arc(x + width - 9, y + 16 + bounce, 3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Black slits in pupils
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.ellipse(x + 11, y + 16 + bounce, 1, 3, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(x + width - 9, y + 16 + bounce, 1, 3, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Angry eyebrows
-            ctx.strokeStyle = '#440000';
-            ctx.lineWidth = 3;
-            ctx.beginPath();
-            ctx.moveTo(x + 3, y + 8 + bounce);
-            ctx.lineTo(x + 15, y + 12 + bounce);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x + width - 3, y + 8 + bounce);
-            ctx.lineTo(x + width - 15, y + 12 + bounce);
-            ctx.stroke();
-            ctx.lineWidth = 1;
-            
-            // Scary mouth with fangs
-            ctx.fillStyle = '#220000';
-            ctx.beginPath();
-            ctx.moveTo(x + 8, y + 26 + bounce);
-            ctx.quadraticCurveTo(x + width/2, y + 35 + bounce, x + width - 8, y + 26 + bounce);
-            ctx.quadraticCurveTo(x + width/2, y + 30 + bounce, x + 8, y + 26 + bounce);
-            ctx.fill();
-            
-            // Fangs
-            ctx.fillStyle = '#FFFFFF';
-            ctx.beginPath();
-            ctx.moveTo(x + 11, y + 26 + bounce);
-            ctx.lineTo(x + 14, y + 33 + bounce);
-            ctx.lineTo(x + 17, y + 26 + bounce);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(x + width - 11, y + 26 + bounce);
-            ctx.lineTo(x + width - 14, y + 33 + bounce);
-            ctx.lineTo(x + width - 17, y + 26 + bounce);
-            ctx.fill();
-            
-            // Clawed feet
-            const footOffset = animFrame === 0 ? 2 : -2;
-            ctx.fillStyle = '#660000';
-            // Left foot with claws
-            ctx.beginPath();
-            ctx.ellipse(x + 8, y + height - 3 + footOffset, 8, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#440000';
-            for (let i = 0; i < 3; i++) {
-                ctx.beginPath();
-                ctx.moveTo(x + 3 + i * 5, y + height + footOffset);
-                ctx.lineTo(x + 5 + i * 5, y + height + 5 + footOffset);
-                ctx.lineTo(x + 7 + i * 5, y + height + footOffset);
-                ctx.fill();
-            }
-            // Right foot with claws
-            ctx.fillStyle = '#660000';
-            ctx.beginPath();
-            ctx.ellipse(x + width - 8, y + height - 3 - footOffset, 8, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#440000';
-            for (let i = 0; i < 3; i++) {
-                ctx.beginPath();
-                ctx.moveTo(x + width - 13 + i * 5, y + height - footOffset);
-                ctx.lineTo(x + width - 11 + i * 5, y + height + 5 - footOffset);
-                ctx.lineTo(x + width - 9 + i * 5, y + height - footOffset);
-                ctx.fill();
-            }
-        }
-
-        // Draw Koopa turtle enemy
-        function drawTurtle(turtle) {
-            const { x, y, width, height, direction, animFrame, inShell } = turtle;
-            const bounce = Math.sin(Date.now() / 200) * 2;
-            
             if (inShell) {
-                // Draw shell only (when hiding)
-                const shellGrad = ctx.createRadialGradient(x + width/2, y + height/2, 0, x + width/2, y + height/2, width/2);
-                shellGrad.addColorStop(0, '#32CD32');
-                shellGrad.addColorStop(0.7, '#228B22');
-                shellGrad.addColorStop(1, '#006400');
-                ctx.fillStyle = shellGrad;
+                // Compact mode - just a spinning disc
+                ctx.fillStyle = '#0a0a0a';
                 ctx.beginPath();
-                ctx.ellipse(x + width/2, y + height/2 + 5, width/2, height/2.5, 0, 0, Math.PI * 2);
+                ctx.ellipse(x + width/2, y + height/2, width/2, height/3, 0, 0, Math.PI * 2);
                 ctx.fill();
                 
-                // Shell pattern
-                ctx.strokeStyle = '#004400';
+                ctx.shadowColor = COLORS.neonPurple;
+                ctx.shadowBlur = 10;
+                ctx.strokeStyle = COLORS.neonPurple;
                 ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(x + width/2, y + 5);
-                ctx.lineTo(x + width/2, y + height - 5);
                 ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(x + 8, y + height/2);
-                ctx.lineTo(x + width - 8, y + height/2);
-                ctx.stroke();
+                ctx.shadowBlur = 0;
                 return;
             }
             
-            // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
-            ctx.beginPath();
-            ctx.ellipse(x + width/2, y + height + 2, width/2.5, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
+            // Main body (tank/recognizer shape)
+            ctx.fillStyle = '#0a0a0a';
             
-            // Shell (back)
-            const shellGrad = ctx.createRadialGradient(x + width/2, y + height/2 + 5, 0, x + width/2, y + height/2, width/2);
-            shellGrad.addColorStop(0, '#32CD32');
-            shellGrad.addColorStop(0.6, '#228B22');
-            shellGrad.addColorStop(1, '#006400');
-            ctx.fillStyle = shellGrad;
+            // Upper hull
             ctx.beginPath();
-            ctx.ellipse(x + width/2, y + height/2 + 5 + bounce/2, width/2 + 2, height/2, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Shell pattern
-            ctx.strokeStyle = '#004400';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.ellipse(x + width/2, y + height/2 + 5 + bounce/2, width/3, height/3, 0, 0, Math.PI * 2);
-            ctx.stroke();
-            
-            // Head
-            const headX = direction > 0 ? x + width - 5 : x - 5;
-            ctx.fillStyle = '#FFDB58';
-            ctx.beginPath();
-            ctx.ellipse(headX, y + 12 + bounce, 12, 10, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Snout/beak
-            ctx.fillStyle = '#F0C040';
-            const beakX = direction > 0 ? headX + 8 : headX - 8;
-            ctx.beginPath();
-            ctx.ellipse(beakX, y + 15 + bounce, 6, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Eyes
-            const eyeX = direction > 0 ? headX + 2 : headX - 2;
-            ctx.fillStyle = '#FFF';
-            ctx.beginPath();
-            ctx.arc(eyeX, y + 10 + bounce, 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.arc(eyeX + (direction > 0 ? 1 : -1), y + 10 + bounce, 2.5, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Eyebrow (angry look)
-            ctx.strokeStyle = '#8B4513';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            if (direction > 0) {
-                ctx.moveTo(eyeX - 4, y + 5 + bounce);
-                ctx.lineTo(eyeX + 4, y + 7 + bounce);
-            } else {
-                ctx.moveTo(eyeX + 4, y + 5 + bounce);
-                ctx.lineTo(eyeX - 4, y + 7 + bounce);
-            }
-            ctx.stroke();
-            
-            // Feet
-            const footOffset = Math.floor(Date.now() / 150) % 2 === 0 ? 3 : -3;
-            ctx.fillStyle = '#FF8C00';
-            // Front foot
-            ctx.beginPath();
-            ctx.ellipse(direction > 0 ? x + width - 8 : x + 8, y + height - 3 + footOffset, 7, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            // Back foot
-            ctx.beginPath();
-            ctx.ellipse(direction > 0 ? x + 12 : x + width - 12, y + height - 3 - footOffset, 7, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Tail
-            ctx.fillStyle = '#FFDB58';
-            ctx.beginPath();
-            const tailX = direction > 0 ? x + 5 : x + width - 5;
-            ctx.moveTo(tailX, y + height/2 + bounce);
-            ctx.lineTo(tailX + (direction > 0 ? -12 : 12), y + height/2 + 8 + bounce);
-            ctx.lineTo(tailX + (direction > 0 ? -8 : 8), y + height/2 - 3 + bounce);
+            ctx.moveTo(x + 5, y + 15 + hover);
+            ctx.lineTo(x + width - 5, y + 15 + hover);
+            ctx.lineTo(x + width - 2, y + 25 + hover);
+            ctx.lineTo(x + 2, y + 25 + hover);
             ctx.closePath();
             ctx.fill();
+            
+            // Lower hull
+            ctx.fillRect(x + 4, y + 25 + hover, width - 8, 12);
+            
+            // Treads/legs
+            ctx.fillRect(x, y + height - 8, 10, 8);
+            ctx.fillRect(x + width - 10, y + height - 8 + (animFrame === 0 ? 2 : 0), 10, 8);
+            
+            // Circuit lines
+            ctx.shadowColor = COLORS.neonPurple;
+            ctx.shadowBlur = 8 * pulse;
+            ctx.strokeStyle = COLORS.neonPurple;
+            ctx.fillStyle = COLORS.neonPurple;
+            ctx.lineWidth = 2;
+            
+            // Scanner/visor
+            const scannerWidth = 20 + Math.sin(Date.now() / 100) * 4;
+            ctx.fillRect(x + (width - scannerWidth) / 2, y + 8 + hover, scannerWidth, 4);
+            
+            // Hull accent lines
+            ctx.beginPath();
+            ctx.moveTo(x + 8, y + 18 + hover);
+            ctx.lineTo(x + width - 8, y + 18 + hover);
+            ctx.stroke();
+            
+            ctx.beginPath();
+            ctx.moveTo(x + 6, y + 28 + hover);
+            ctx.lineTo(x + width - 6, y + 28 + hover);
+            ctx.stroke();
+            
+            // Direction indicator
+            const indX = direction > 0 ? x + width - 8 : x + 8;
+            ctx.fillRect(indX - 2, y + 20 + hover, 4, 8);
+            
+            // Tread accents
+            ctx.fillRect(x + 2, y + height - 6, 6, 2);
+            ctx.fillRect(x + width - 8, y + height - 6, 6, 2);
+            
+            // Energy core
+            ctx.beginPath();
+            ctx.arc(x + width / 2, y + 22 + hover, 4, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            ctx.shadowBlur = 0;
         }
         
-        // Draw flag
+        // Draw exit portal (TRON style)
         function drawFlag() {
             const { x, y, poleHeight, animTimer } = flag;
+            const pulse = 0.6 + Math.sin(animTimer / 8) * 0.4;
+            const rotation = animTimer * 0.02;
             
-            // Pole
-            ctx.fillStyle = COLORS.flagPole;
-            ctx.fillRect(x, y, 7, poleHeight);
-            
-            // Ball on top
-            ctx.fillStyle = COLORS.coin;
+            // Portal glow on ground
+            ctx.shadowColor = COLORS.neonCyan;
+            ctx.shadowBlur = 30 * pulse;
+            ctx.fillStyle = `rgba(0, 255, 255, ${0.3 * pulse})`;
             ctx.beginPath();
-            ctx.arc(x + 3, y, 7, 0, Math.PI * 2);
+            ctx.ellipse(x + 25, y + poleHeight, 40, 10, 0, 0, Math.PI * 2);
             ctx.fill();
             
-            // Flag with wave
-            const wave = Math.sin(animTimer / 10) * 4;
-            ctx.fillStyle = COLORS.flag;
+            // Portal frame (angular)
+            ctx.fillStyle = '#0a0a0a';
             ctx.beginPath();
-            ctx.moveTo(x + 7, y + 8);
-            ctx.lineTo(x + 55 + wave, y + 20);
-            ctx.lineTo(x + 50 + wave * 0.5, y + 35);
-            ctx.lineTo(x + 7, y + 45);
+            ctx.moveTo(x, y + poleHeight);
+            ctx.lineTo(x + 10, y);
+            ctx.lineTo(x + 40, y);
+            ctx.lineTo(x + 50, y + poleHeight);
             ctx.closePath();
             ctx.fill();
             
-            // Star on flag
-            const starX = x + 27 + wave * 0.5;
-            const starY = y + 26;
-            ctx.fillStyle = COLORS.coin;
-            drawStar(starX, starY, 8, 4, 5);
+            // Portal circuits
+            ctx.shadowColor = COLORS.neonCyan;
+            ctx.shadowBlur = 15 * pulse;
+            ctx.strokeStyle = COLORS.neonCyan;
+            ctx.lineWidth = 3;
+            
+            // Outer frame
+            ctx.beginPath();
+            ctx.moveTo(x + 2, y + poleHeight - 5);
+            ctx.lineTo(x + 12, y + 5);
+            ctx.lineTo(x + 38, y + 5);
+            ctx.lineTo(x + 48, y + poleHeight - 5);
+            ctx.stroke();
+            
+            // Inner portal energy
+            ctx.fillStyle = `rgba(0, 255, 255, ${0.2 + pulse * 0.3})`;
+            ctx.beginPath();
+            ctx.moveTo(x + 15, y + poleHeight - 20);
+            ctx.lineTo(x + 18, y + 25);
+            ctx.lineTo(x + 32, y + 25);
+            ctx.lineTo(x + 35, y + poleHeight - 20);
+            ctx.closePath();
+            ctx.fill();
+            
+            // Scanning lines
+            for (let i = 0; i < 4; i++) {
+                const lineY = y + 40 + i * 25;
+                if (lineY < y + poleHeight - 10) {
+                    const scanPulse = Math.sin(animTimer / 5 + i) * 0.5 + 0.5;
+                    ctx.strokeStyle = `rgba(0, 255, 255, ${scanPulse})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x + 16, lineY);
+                    ctx.lineTo(x + 34, lineY);
+                    ctx.stroke();
+                }
+            }
+            
+            // EXIT text
+            ctx.fillStyle = COLORS.neonCyan;
+            ctx.font = 'bold 10px "Courier New", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('EXIT', x + 25, y + 18);
+            ctx.textAlign = 'left';
+            
+            // Top accent
+            ctx.fillRect(x + 20, y + 2, 10, 3);
+            
+            ctx.shadowBlur = 0;
         }
 
         // Draw star shape
@@ -1254,26 +1070,44 @@ game_html = """
             ctx.fill();
         }
 
-        // Draw UI
+        // Draw UI - TRON style
         function drawUI() {
-            // Coin counter background
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            ctx.roundRect(15, 12, 130, 35, 8);
-            ctx.fill();
+            // Energy bit counter background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(15, 12, 120, 30);
             
-            // Coin icon
-            ctx.fillStyle = COLORS.coin;
+            // Border
+            ctx.strokeStyle = COLORS.neonOrange;
+            ctx.lineWidth = 1;
+            ctx.strokeRect(15, 12, 120, 30);
+            
+            // Energy icon (diamond)
+            ctx.shadowColor = COLORS.neonOrange;
+            ctx.shadowBlur = 8;
+            ctx.fillStyle = COLORS.neonOrange;
             ctx.beginPath();
-            ctx.arc(35, 30, 12, 0, Math.PI * 2);
+            ctx.moveTo(30, 18);
+            ctx.lineTo(40, 27);
+            ctx.lineTo(30, 36);
+            ctx.lineTo(20, 27);
+            ctx.closePath();
             ctx.fill();
-            ctx.fillStyle = '#B8860B';
-            ctx.font = 'bold 14px Arial';
-            ctx.fillText('$', 31, 35);
+            ctx.shadowBlur = 0;
+            
+            // Inner diamond
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.moveTo(30, 22);
+            ctx.lineTo(36, 27);
+            ctx.lineTo(30, 32);
+            ctx.lineTo(24, 27);
+            ctx.closePath();
+            ctx.fill();
             
             // Score text
-            ctx.fillStyle = COLORS.text;
-            ctx.font = 'bold 20px Arial';
-            ctx.fillText(`× ${score}`, 55, 37);
+            ctx.fillStyle = COLORS.neonOrange;
+            ctx.font = 'bold 16px "Courier New", monospace';
+            ctx.fillText(`${score} / ${coins.length}`, 50, 32);
         }
 
         // Collision detection
@@ -1416,16 +1250,16 @@ game_html = """
         // Game over
         function gameOver() {
             gameState = 'lost';
-            overlayTitle.textContent = '💀 GAME OVER 💀';
-            overlayScore.textContent = `${playerName} collected ${score}/${coins.length} coins`;
+            overlayTitle.textContent = '⚠ DEREZZED ⚠';
+            overlayScore.textContent = `${playerName.toUpperCase()} collected ${score}/${coins.length} energy bits`;
             overlay.style.display = 'flex';
         }
 
         // Game won
         function gameWon() {
             gameState = 'won';
-            overlayTitle.textContent = '🎉 YOU WIN! 🎉';
-            overlayScore.textContent = `${playerName} collected ${score}/${coins.length} coins!`;
+            overlayTitle.textContent = '⚡ EXIT REACHED ⚡';
+            overlayScore.textContent = `${playerName.toUpperCase()} collected ${score}/${coins.length} energy bits!`;
             overlay.style.display = 'flex';
         }
 
@@ -1497,644 +1331,488 @@ game_html = """
             drawProgressBar();
         }
         
-        // Draw title screen
+        // Draw title screen - TRON style
         function drawTitleScreen() {
-            // Animated background
             const time = Date.now() / 1000;
             
-            // Gradient sky
+            // Dark gradient background
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(0.5, '#16213e');
-            gradient.addColorStop(1, '#0f3460');
+            gradient.addColorStop(0, '#000000');
+            gradient.addColorStop(0.5, '#050510');
+            gradient.addColorStop(1, '#0a0a1a');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Animated stars
-            ctx.fillStyle = '#FFF';
-            for (let i = 0; i < 50; i++) {
-                const x = (i * 73 + time * 20) % canvas.width;
-                const y = (i * 37) % (canvas.height / 2);
-                const twinkle = Math.sin(time * 3 + i) * 0.5 + 0.5;
-                ctx.globalAlpha = twinkle;
+            // Grid floor
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            for (let y = 350; y < canvas.height; y += 15) {
                 ctx.beginPath();
-                ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
             }
-            ctx.globalAlpha = 1;
+            for (let x = 0; x < canvas.width; x += 60) {
+                ctx.beginPath();
+                ctx.moveTo(x, 350);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
             
-            // Title with glow effect
-            ctx.shadowColor = '#FFD700';
-            ctx.shadowBlur = 30;
-            ctx.fillStyle = '#FFD700';
-            ctx.font = 'bold 56px Arial';
+            // Animated data streams
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) {
+                const streamX = (i * 120 + time * 50) % (canvas.width + 100) - 50;
+                const streamY = 50 + i * 20;
+                ctx.beginPath();
+                ctx.moveTo(streamX, streamY);
+                ctx.lineTo(streamX + 40 + Math.sin(time + i) * 10, streamY);
+                ctx.stroke();
+            }
+            
+            // Title with neon glow
+            ctx.shadowColor = COLORS.neonCyan;
+            ctx.shadowBlur = 40;
+            ctx.fillStyle = COLORS.neonCyan;
+            ctx.font = 'bold 64px "Courier New", monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('🍄 SUPER PRADY BROS 🍄', canvas.width / 2, 120);
+            ctx.fillText('TRON: ARES', canvas.width / 2, 100);
+            
+            // Secondary glow layer
+            ctx.shadowColor = '#FFFFFF';
+            ctx.shadowBlur = 20;
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = 'bold 62px "Courier New", monospace';
+            ctx.fillText('TRON: ARES', canvas.width / 2, 100);
             ctx.shadowBlur = 0;
             
             // Subtitle
-            ctx.fillStyle = '#87CEEB';
-            ctx.font = '24px Arial';
-            ctx.fillText('A Mario-Style Adventure', canvas.width / 2, 160);
+            ctx.shadowColor = COLORS.neonOrange;
+            ctx.shadowBlur = 15;
+            ctx.fillStyle = COLORS.neonOrange;
+            ctx.font = '20px "Courier New", monospace';
+            ctx.fillText('[ ENTER THE GRID ]', canvas.width / 2, 140);
+            ctx.shadowBlur = 0;
             
-            // Draw a preview character
-            const previewX = canvas.width / 2 - 20;
-            const previewY = 200 + Math.sin(time * 2) * 10;
-            drawPlayerAt(previewX, previewY, true);
+            // Draw preview program
+            const previewX = canvas.width / 2 - 18;
+            const previewY = 180 + Math.sin(time * 2) * 5;
+            drawCharacterPreview(previewX, previewY, characters[0]);
             
-            // Name input box
-            ctx.fillStyle = 'rgba(255,255,255,0.1)';
-            ctx.strokeStyle = nameInputActive ? '#FFD700' : '#87CEEB';
-            ctx.lineWidth = 3;
+            // Name input box (angular TRON style)
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
             const boxX = canvas.width / 2 - 150;
-            const boxY = 300;
-            ctx.beginPath();
-            ctx.roundRect(boxX, boxY, 300, 50, 10);
-            ctx.fill();
-            ctx.stroke();
+            const boxY = 290;
+            ctx.fillRect(boxX, boxY, 300, 45);
+            
+            // Glowing border
+            ctx.shadowColor = nameInputActive ? COLORS.neonOrange : COLORS.neonCyan;
+            ctx.shadowBlur = nameInputActive ? 15 : 8;
+            ctx.strokeStyle = nameInputActive ? COLORS.neonOrange : COLORS.neonCyan;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(boxX, boxY, 300, 45);
+            ctx.shadowBlur = 0;
             
             // Label
-            ctx.fillStyle = '#FFF';
-            ctx.font = '18px Arial';
-            ctx.fillText('Enter Your Name:', canvas.width / 2, boxY - 15);
+            ctx.fillStyle = COLORS.neonCyan;
+            ctx.font = '14px "Courier New", monospace';
+            ctx.fillText('ENTER PROGRAM ID:', canvas.width / 2, boxY - 10);
             
             // Name text or placeholder
-            ctx.font = 'bold 24px Arial';
+            ctx.font = 'bold 20px "Courier New", monospace';
             if (playerName) {
-                ctx.fillStyle = '#FFD700';
-                ctx.fillText(playerName, canvas.width / 2, boxY + 33);
+                ctx.shadowColor = COLORS.neonCyan;
+                ctx.shadowBlur = 10;
+                ctx.fillStyle = COLORS.neonCyan;
+                ctx.fillText(playerName.toUpperCase(), canvas.width / 2, boxY + 28);
+                ctx.shadowBlur = 0;
             } else {
-                ctx.fillStyle = 'rgba(255,255,255,0.4)';
-                ctx.fillText('Click here to type...', canvas.width / 2, boxY + 33);
+                ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+                ctx.fillText('_', canvas.width / 2, boxY + 28);
             }
             
             // Cursor blink
-            if (nameInputActive && Math.floor(time * 2) % 2 === 0) {
-                const textWidth = ctx.measureText(playerName).width;
-                ctx.fillStyle = '#FFD700';
-                ctx.fillRect(canvas.width / 2 + textWidth / 2 + 5, boxY + 12, 2, 26);
+            if (nameInputActive && Math.floor(time * 3) % 2 === 0) {
+                const textWidth = ctx.measureText(playerName.toUpperCase()).width;
+                ctx.fillStyle = COLORS.neonOrange;
+                ctx.fillRect(canvas.width / 2 + textWidth / 2 + 5, boxY + 10, 3, 25);
             }
             
             // Start button
             const canStart = playerName.length >= 1;
-            const btnY = 400;
-            const btnHover = Math.sin(time * 4) * 3;
-            const btnText = canStart ? '▶ CHOOSE CHARACTER' : 'Enter name first';
-            const btnWidth = Math.max(280, ctx.measureText(btnText).width + 60);
+            const btnY = 380;
+            const pulse = 0.8 + Math.sin(time * 4) * 0.2;
+            const btnText = canStart ? '[ SELECT PROGRAM ]' : '[ ENTER ID FIRST ]';
+            
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(canvas.width / 2 - 130, btnY, 260, 45);
             
             if (canStart) {
-                ctx.fillStyle = '#00FF7F';
-                ctx.shadowColor = '#00FF7F';
-                ctx.shadowBlur = 20;
+                ctx.shadowColor = COLORS.neonCyan;
+                ctx.shadowBlur = 15 * pulse;
+                ctx.strokeStyle = COLORS.neonCyan;
             } else {
-                ctx.fillStyle = '#555';
-                ctx.shadowBlur = 0;
+                ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
             }
-            
-            ctx.beginPath();
-            ctx.roundRect(canvas.width / 2 - btnWidth / 2, btnY + btnHover, btnWidth, 50, 10);
-            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeRect(canvas.width / 2 - 130, btnY, 260, 45);
             ctx.shadowBlur = 0;
             
-            ctx.fillStyle = canStart ? '#000' : '#888';
-            ctx.font = 'bold 22px Arial';
-            ctx.fillText(btnText, canvas.width / 2, btnY + 33 + btnHover);
+            ctx.fillStyle = canStart ? COLORS.neonCyan : 'rgba(0, 255, 255, 0.4)';
+            ctx.font = 'bold 18px "Courier New", monospace';
+            ctx.fillText(btnText, canvas.width / 2, btnY + 28);
             
             // Instructions
-            ctx.fillStyle = 'rgba(255,255,255,0.6)';
-            ctx.font = '16px Arial';
-            ctx.fillText('Press ENTER or click START to begin', canvas.width / 2, 480);
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
+            ctx.font = '12px "Courier New", monospace';
+            ctx.fillText('PRESS ENTER TO CONTINUE', canvas.width / 2, 470);
             
             ctx.textAlign = 'left';
         }
         
-        // Draw character selection screen - Carousel style
+        // Draw character selection screen - TRON style carousel
         function drawCharacterSelect() {
             const time = Date.now() / 1000;
             
-            // Gradient background
+            // Dark background with grid
             const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, '#1a1a2e');
-            gradient.addColorStop(0.5, '#16213e');
-            gradient.addColorStop(1, '#0f3460');
+            gradient.addColorStop(0, '#000000');
+            gradient.addColorStop(1, '#0a0a15');
             ctx.fillStyle = gradient;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
+            // Grid lines
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.08)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 40) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+            
             // Title
-            ctx.fillStyle = '#FFD700';
-            ctx.font = 'bold 42px Arial';
+            ctx.shadowColor = COLORS.neonCyan;
+            ctx.shadowBlur = 25;
+            ctx.fillStyle = COLORS.neonCyan;
+            ctx.font = 'bold 36px "Courier New", monospace';
             ctx.textAlign = 'center';
-            ctx.shadowColor = '#FFD700';
-            ctx.shadowBlur = 20;
-            ctx.fillText('CHOOSE YOUR HERO', canvas.width / 2, 55);
+            ctx.fillText('[ SELECT PROGRAM ]', canvas.width / 2, 50);
             ctx.shadowBlur = 0;
             
-            // Player name display
-            ctx.fillStyle = '#87CEEB';
-            ctx.font = '20px Arial';
-            ctx.fillText(`Playing as: ${playerName}`, canvas.width / 2, 85);
+            // Player ID display
+            ctx.fillStyle = COLORS.neonOrange;
+            ctx.font = '16px "Courier New", monospace';
+            ctx.fillText(`ID: ${playerName.toUpperCase()}`, canvas.width / 2, 75);
             
-            // Carousel - show 3 characters at a time with selected in center
-            const cardWidth = 160;
-            const cardHeight = 220;
-            const cardY = 120;
+            // Carousel settings
+            const cardWidth = 140;
+            const cardHeight = 200;
+            const cardY = 100;
             const centerX = canvas.width / 2;
-            const cardSpacing = 180;
+            const cardSpacing = 160;
             
-            // Draw navigation arrows
-            ctx.fillStyle = '#FFD700';
-            ctx.font = 'bold 48px Arial';
-            ctx.fillText('◀', 40, cardY + cardHeight / 2 + 15);
-            ctx.fillText('▶', canvas.width - 60, cardY + cardHeight / 2 + 15);
+            // Navigation arrows
+            ctx.shadowColor = COLORS.neonCyan;
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = COLORS.neonCyan;
+            ctx.font = 'bold 40px "Courier New", monospace';
+            ctx.fillText('<', 50, cardY + cardHeight / 2 + 15);
+            ctx.fillText('>', canvas.width - 50, cardY + cardHeight / 2 + 15);
+            ctx.shadowBlur = 0;
             
-            // Draw characters in carousel (show 5: 2 left, center, 2 right)
+            // Draw character cards
             for (let offset = -2; offset <= 2; offset++) {
                 let charIndex = (selectedCharacter + offset + characters.length) % characters.length;
                 const char = characters[charIndex];
                 const isSelected = offset === 0;
                 
-                // Calculate position with perspective
                 const cardX = centerX + offset * cardSpacing - cardWidth / 2;
-                const scale = isSelected ? 1.0 : 0.75;
-                const opacity = isSelected ? 1.0 : 0.6;
-                const yOffset = isSelected ? 0 : 20;
-                const hover = isSelected ? Math.sin(time * 4) * 5 : 0;
+                const scale = isSelected ? 1.0 : 0.7;
+                const opacity = isSelected ? 1.0 : 0.5;
+                const yOffset = isSelected ? 0 : 25;
+                const pulse = isSelected ? (0.8 + Math.sin(time * 4) * 0.2) : 1;
                 
-                // Skip if too far off screen
                 if (cardX < -cardWidth || cardX > canvas.width + cardWidth) continue;
                 
                 ctx.save();
                 ctx.globalAlpha = opacity;
                 
-                // Scale from center of card
                 const scaledWidth = cardWidth * scale;
                 const scaledHeight = cardHeight * scale;
                 const scaledX = cardX + (cardWidth - scaledWidth) / 2;
-                const scaledY = cardY + yOffset + (cardHeight - scaledHeight) / 2 + hover;
+                const scaledY = cardY + yOffset + (cardHeight - scaledHeight) / 2;
                 
-                // Card background
+                // Card background (angular TRON style)
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+                ctx.fillRect(scaledX, scaledY, scaledWidth, scaledHeight);
+                
+                // Card border with glow
                 if (isSelected) {
-                    ctx.fillStyle = 'rgba(255, 215, 0, 0.3)';
-                    ctx.strokeStyle = '#FFD700';
-                    ctx.lineWidth = 4;
-                    ctx.shadowColor = '#FFD700';
-                    ctx.shadowBlur = 25;
+                    ctx.shadowColor = char.circuitColor;
+                    ctx.shadowBlur = 20 * pulse;
+                    ctx.strokeStyle = char.circuitColor;
+                    ctx.lineWidth = 3;
                 } else {
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                    ctx.lineWidth = 2;
-                    ctx.shadowBlur = 0;
+                    ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+                    ctx.lineWidth = 1;
                 }
-                
-                ctx.beginPath();
-                ctx.roundRect(scaledX, scaledY, scaledWidth, scaledHeight, 15 * scale);
-                ctx.fill();
-                ctx.stroke();
+                ctx.strokeRect(scaledX, scaledY, scaledWidth, scaledHeight);
                 ctx.shadowBlur = 0;
                 
-                // Character preview (adjust position for scale)
-                const charPreviewX = scaledX + scaledWidth / 2 - 18 * scale;
-                const charPreviewY = scaledY + 30 * scale;
+                // Corner accents
+                if (isSelected) {
+                    ctx.fillStyle = char.circuitColor;
+                    ctx.fillRect(scaledX, scaledY, 15, 3);
+                    ctx.fillRect(scaledX, scaledY, 3, 15);
+                    ctx.fillRect(scaledX + scaledWidth - 15, scaledY, 15, 3);
+                    ctx.fillRect(scaledX + scaledWidth - 3, scaledY, 3, 15);
+                    ctx.fillRect(scaledX, scaledY + scaledHeight - 3, 15, 3);
+                    ctx.fillRect(scaledX, scaledY + scaledHeight - 15, 3, 15);
+                    ctx.fillRect(scaledX + scaledWidth - 15, scaledY + scaledHeight - 3, 15, 3);
+                    ctx.fillRect(scaledX + scaledWidth - 3, scaledY + scaledHeight - 15, 3, 15);
+                }
                 
+                // Character preview
                 ctx.save();
-                ctx.translate(scaledX + scaledWidth / 2, scaledY + scaledHeight / 2 - 30);
-                ctx.scale(scale, scale);
+                ctx.translate(scaledX + scaledWidth / 2, scaledY + scaledHeight / 2 - 20);
+                ctx.scale(scale * 1.2, scale * 1.2);
                 ctx.translate(-18, -30);
                 drawCharacterPreview(0, 0, char);
                 ctx.restore();
                 
                 // Character name
-                ctx.fillStyle = isSelected ? '#FFD700' : '#FFF';
-                ctx.font = `bold ${Math.floor(18 * scale)}px Arial`;
-                ctx.fillText(char.name, scaledX + scaledWidth / 2, scaledY + scaledHeight - 50 * scale);
+                ctx.shadowColor = char.circuitColor;
+                ctx.shadowBlur = isSelected ? 10 : 0;
+                ctx.fillStyle = isSelected ? char.circuitColor : 'rgba(255, 255, 255, 0.7)';
+                ctx.font = `bold ${Math.floor(14 * scale)}px "Courier New", monospace`;
+                ctx.fillText(char.name, scaledX + scaledWidth / 2, scaledY + scaledHeight - 35 * scale);
                 
                 // Description
-                ctx.fillStyle = 'rgba(255,255,255,0.7)';
-                ctx.font = `${Math.floor(12 * scale)}px Arial`;
-                ctx.fillText(char.description, scaledX + scaledWidth / 2, scaledY + scaledHeight - 28 * scale);
-                
-                // Selection indicator for center character
-                if (isSelected) {
-                    ctx.fillStyle = '#FFD700';
-                    ctx.font = '24px Arial';
-                    ctx.fillText('▼', scaledX + scaledWidth / 2, scaledY - 5);
-                }
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.font = `${Math.floor(10 * scale)}px "Courier New", monospace`;
+                ctx.fillText(char.description, scaledX + scaledWidth / 2, scaledY + scaledHeight - 18 * scale);
                 
                 ctx.restore();
             }
             
-            // Character counter
-            ctx.fillStyle = '#FFF';
-            ctx.font = '16px Arial';
-            ctx.fillText(`${selectedCharacter + 1} / ${characters.length}`, canvas.width / 2, 365);
+            // Program counter
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
+            ctx.font = '14px "Courier New", monospace';
+            ctx.fillText(`[ ${selectedCharacter + 1} / ${characters.length} ]`, canvas.width / 2, 340);
             
             // Navigation hints
-            ctx.fillStyle = 'rgba(255,255,255,0.6)';
-            ctx.font = '18px Arial';
-            ctx.fillText('← → to select  |  ENTER or SPACE to start', canvas.width / 2, 395);
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
+            ctx.font = '12px "Courier New", monospace';
+            ctx.fillText('< > SELECT  |  ENTER INITIALIZE', canvas.width / 2, 365);
             
-            // Start button
-            const btnY = 420;
-            ctx.fillStyle = '#00FF7F';
-            ctx.shadowColor = '#00FF7F';
+            // Initialize button
+            const btnY = 395;
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.9)';
+            ctx.fillRect(canvas.width / 2 - 120, btnY, 240, 45);
+            
+            const selectedChar = characters[selectedCharacter];
+            ctx.shadowColor = selectedChar.circuitColor;
             ctx.shadowBlur = 15;
-            ctx.beginPath();
-            ctx.roundRect(canvas.width / 2 - 120, btnY, 240, 50, 10);
-            ctx.fill();
+            ctx.strokeStyle = selectedChar.circuitColor;
+            ctx.lineWidth = 2;
+            ctx.strokeRect(canvas.width / 2 - 120, btnY, 240, 45);
             ctx.shadowBlur = 0;
             
-            ctx.fillStyle = '#000';
-            ctx.font = 'bold 22px Arial';
-            ctx.fillText(`▶ PLAY AS ${characters[selectedCharacter].name.toUpperCase()}`, canvas.width / 2, btnY + 33);
+            ctx.fillStyle = selectedChar.circuitColor;
+            ctx.font = 'bold 16px "Courier New", monospace';
+            ctx.fillText(`[ INITIALIZE ${selectedChar.name} ]`, canvas.width / 2, btnY + 28);
+            
+            // Back hint
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.font = '11px "Courier New", monospace';
+            ctx.fillText('ESC: RETURN', canvas.width / 2, 475);
             
             ctx.textAlign = 'left';
         }
         
-        // Draw character preview for selection screen (enhanced with unique features)
+        // Draw character preview - TRON 8-bit style
         function drawCharacterPreview(x, y, char) {
-            const floatY = y + Math.sin(Date.now() / 300) * 4;
-            const isFemale = char.gender === 'female';
-            const skinTone = char.skinTone || '#FFDAB9';
-            const skinDark = shadeColor(skinTone, -20);
-            const hairColor = char.hairColor || '#5D4037';
-            const eyeColor = char.eyeColor || '#4169E1';
+            const floatY = y + Math.sin(Date.now() / 300) * 3;
+            const circuitColor = char.circuitColor || '#00FFFF';
+            const secondaryColor = char.secondaryColor || '#0088FF';
+            const pulse = 0.7 + Math.sin(Date.now() / 200) * 0.3;
             
-            // Shadow
-            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            // Ground glow
+            ctx.shadowColor = circuitColor;
+            ctx.shadowBlur = 12 * pulse;
+            ctx.fillStyle = `rgba(${hexToRgb(circuitColor)}, 0.3)`;
             ctx.beginPath();
-            ctx.ellipse(x + 18, y + 58, 14, 4, 0, 0, Math.PI * 2);
+            ctx.ellipse(x + 18, y + 58, 12, 3, 0, 0, Math.PI * 2);
             ctx.fill();
+            ctx.shadowBlur = 0;
             
-            // Hair behind head (for long/curly styles)
-            if (char.hairStyle === 'long') {
-                ctx.fillStyle = hairColor;
-                ctx.beginPath();
-                ctx.ellipse(x + 18, floatY + 15, 16, 20, 0, 0, Math.PI * 2);
-                ctx.fill();
-                // Flowing hair
-                ctx.beginPath();
-                ctx.moveTo(x + 2, floatY + 10);
-                ctx.quadraticCurveTo(x - 2, floatY + 35, x + 5, floatY + 45);
-                ctx.quadraticCurveTo(x + 8, floatY + 35, x + 6, floatY + 15);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.moveTo(x + 34, floatY + 10);
-                ctx.quadraticCurveTo(x + 38, floatY + 35, x + 31, floatY + 45);
-                ctx.quadraticCurveTo(x + 28, floatY + 35, x + 30, floatY + 15);
-                ctx.fill();
-            } else if (char.hairStyle === 'curly') {
-                ctx.fillStyle = hairColor;
-                for (let i = 0; i < 8; i++) {
-                    const angle = (i / 8) * Math.PI * 2;
-                    const hx = x + 18 + Math.cos(angle) * 14;
-                    const hy = floatY + 8 + Math.sin(angle) * 12;
-                    ctx.beginPath();
-                    ctx.arc(hx, hy, 6, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-            }
+            // === 8-BIT TRON BODY ===
             
-            // Body with gradient
-            const bodyGrad = ctx.createLinearGradient(x + 4, floatY + 18, x + 32, floatY + 45);
-            bodyGrad.addColorStop(0, char.shirtColor);
-            bodyGrad.addColorStop(0.5, shadeColor(char.shirtColor, -15));
-            bodyGrad.addColorStop(1, shadeColor(char.shirtColor, -30));
-            ctx.fillStyle = bodyGrad;
+            // Body base (dark suit)
+            ctx.fillStyle = '#0a0a0a';
             
-            if (isFemale) {
-                // Dress/feminine body shape
-                ctx.beginPath();
-                ctx.moveTo(x + 8, floatY + 18);
-                ctx.lineTo(x + 28, floatY + 18);
-                ctx.lineTo(x + 32, floatY + 42);
-                ctx.lineTo(x + 4, floatY + 42);
-                ctx.closePath();
-                ctx.fill();
-                // Dress ruffle
-                ctx.beginPath();
-                for (let i = 0; i < 5; i++) {
-                    ctx.arc(x + 6 + i * 6, floatY + 42, 4, 0, Math.PI);
-                }
-                ctx.fill();
-            } else {
-                ctx.beginPath();
-                ctx.roundRect(x + 5, floatY + 18, 26, 25, 4);
-                ctx.fill();
-                // Overalls straps
-                ctx.fillStyle = char.pantsColor;
-                ctx.fillRect(x + 8, floatY + 18, 4, 10);
-                ctx.fillRect(x + 24, floatY + 18, 4, 10);
-            }
+            // Torso
+            ctx.fillRect(x + 6, floatY + 14, 24, 28);
             
-            // Body highlight
-            ctx.fillStyle = 'rgba(255,255,255,0.2)';
-            ctx.beginPath();
-            ctx.roundRect(x + 6, floatY + 19, 8, 12, 2);
-            ctx.fill();
-            
-            // Belt (only for non-dress)
-            if (!isFemale) {
-                ctx.fillStyle = shadeColor(char.pantsColor, -20);
-                ctx.fillRect(x + 5, floatY + 38, 26, 4);
-                ctx.fillStyle = '#FFD700';
-                ctx.beginPath();
-                ctx.roundRect(x + 14, floatY + 38, 8, 4, 1);
-                ctx.fill();
-            }
-            
-            // Head with gradient (using character skin tone)
-            const headGrad = ctx.createRadialGradient(x + 15, floatY + 8, 0, x + 18, floatY + 11, 13);
-            headGrad.addColorStop(0, shadeColor(skinTone, 10));
-            headGrad.addColorStop(0.7, skinTone);
-            headGrad.addColorStop(1, skinDark);
-            ctx.fillStyle = headGrad;
-            ctx.beginPath();
-            ctx.ellipse(x + 18, floatY + 11, 12, 12, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Blush for female characters
-            if (isFemale) {
-                ctx.fillStyle = 'rgba(255,150,150,0.4)';
-                ctx.beginPath();
-                ctx.ellipse(x + 8, floatY + 14, 4, 3, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.ellipse(x + 28, floatY + 14, 4, 3, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // Ear
-            ctx.fillStyle = skinTone;
-            ctx.beginPath();
-            ctx.ellipse(x + 31, floatY + 12, 3, 4, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Hat or Hair on top
-            if (char.hasHat) {
-                const hatGrad = ctx.createLinearGradient(x + 4, floatY, x + 32, floatY + 12);
-                hatGrad.addColorStop(0, shadeColor(char.hatColor, 20));
-                hatGrad.addColorStop(0.5, char.hatColor);
-                hatGrad.addColorStop(1, shadeColor(char.hatColor, -25));
-                ctx.fillStyle = hatGrad;
-                ctx.beginPath();
-                ctx.roundRect(x + 4, floatY - 2, 28, 12, 3);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.roundRect(x + 22, floatY + 4, 14, 8, 2);
-                ctx.fill();
-                
-                // Hat emblem
-                ctx.fillStyle = '#FFF';
-                ctx.beginPath();
-                ctx.arc(x + 18, floatY + 4, 5, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = char.hatColor;
-                ctx.font = 'bold 7px Arial';
-                ctx.fillText(char.name[0], x + 15, floatY + 7);
-            } else if (char.hairStyle === 'short') {
-                // Short spiky hair
-                ctx.fillStyle = hairColor;
-                ctx.beginPath();
-                ctx.ellipse(x + 18, floatY + 2, 10, 8, 0, 0, Math.PI * 2);
-                ctx.fill();
-            } else if (char.hairStyle === 'spiky') {
-                ctx.fillStyle = hairColor;
-                for (let i = 0; i < 5; i++) {
-                    ctx.beginPath();
-                    ctx.moveTo(x + 8 + i * 5, floatY + 5);
-                    ctx.lineTo(x + 10 + i * 5, floatY - 8 - Math.random() * 4);
-                    ctx.lineTo(x + 12 + i * 5, floatY + 5);
-                    ctx.fill();
-                }
-            } else if (char.hairStyle === 'ponytail') {
-                ctx.fillStyle = hairColor;
-                ctx.beginPath();
-                ctx.ellipse(x + 18, floatY + 2, 12, 8, 0, 0, Math.PI * 2);
-                ctx.fill();
-                // Ponytail
-                ctx.beginPath();
-                ctx.moveTo(x + 30, floatY);
-                ctx.quadraticCurveTo(x + 40, floatY + 5, x + 38, floatY + 25);
-                ctx.quadraticCurveTo(x + 35, floatY + 20, x + 32, floatY + 5);
-                ctx.fill();
-                // Hair tie
-                ctx.fillStyle = char.color;
-                ctx.beginPath();
-                ctx.ellipse(x + 32, floatY + 3, 3, 2, 0.3, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // Crown for princess characters
-            if (char.hasCrown) {
-                ctx.fillStyle = '#FFD700';
-                ctx.beginPath();
-                ctx.moveTo(x + 8, floatY - 5);
-                ctx.lineTo(x + 10, floatY - 15);
-                ctx.lineTo(x + 14, floatY - 8);
-                ctx.lineTo(x + 18, floatY - 18);
-                ctx.lineTo(x + 22, floatY - 8);
-                ctx.lineTo(x + 26, floatY - 15);
-                ctx.lineTo(x + 28, floatY - 5);
-                ctx.closePath();
-                ctx.fill();
-                // Gems
-                ctx.fillStyle = '#FF1493';
-                ctx.beginPath();
-                ctx.arc(x + 18, floatY - 12, 3, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.fillStyle = '#00CED1';
-                ctx.beginPath();
-                ctx.arc(x + 11, floatY - 10, 2, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.beginPath();
-                ctx.arc(x + 25, floatY - 10, 2, 0, Math.PI * 2);
-                ctx.fill();
-            }
-            
-            // Eyes (larger for female characters)
-            const eyeSize = isFemale ? 5 : 4;
-            const eyeHeight = isFemale ? 6 : 5;
-            ctx.fillStyle = '#FFF';
-            ctx.beginPath();
-            ctx.ellipse(x + 13, floatY + 10, eyeSize - 1, eyeHeight, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(x + 23, floatY + 10, eyeSize - 1, eyeHeight, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Iris
-            ctx.fillStyle = eyeColor;
-            ctx.beginPath();
-            ctx.arc(x + 14, floatY + 10, 2.5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + 24, floatY + 10, 2.5, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Pupil
-            ctx.fillStyle = '#000';
-            ctx.beginPath();
-            ctx.arc(x + 14, floatY + 10, 1.2, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + 24, floatY + 10, 1.2, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Eye shine
-            ctx.fillStyle = '#FFF';
-            ctx.beginPath();
-            ctx.arc(x + 15, floatY + 9, 1, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.arc(x + 25, floatY + 9, 1, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Eyelashes for female
-            if (isFemale) {
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 1.5;
-                ctx.beginPath();
-                ctx.moveTo(x + 9, floatY + 6);
-                ctx.lineTo(x + 8, floatY + 4);
-                ctx.moveTo(x + 11, floatY + 5);
-                ctx.lineTo(x + 10, floatY + 3);
-                ctx.moveTo(x + 27, floatY + 6);
-                ctx.lineTo(x + 28, floatY + 4);
-                ctx.moveTo(x + 25, floatY + 5);
-                ctx.lineTo(x + 26, floatY + 3);
-                ctx.stroke();
-            }
-            
-            // Eyebrows
-            ctx.strokeStyle = hairColor;
-            ctx.lineWidth = isFemale ? 1.5 : 2;
-            ctx.beginPath();
-            ctx.moveTo(x + 10, floatY + 5);
-            ctx.quadraticCurveTo(x + 13, floatY + 3, x + 16, floatY + 5);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x + 20, floatY + 5);
-            ctx.quadraticCurveTo(x + 23, floatY + 3, x + 26, floatY + 5);
-            ctx.stroke();
-            ctx.lineWidth = 1;
-            
-            // Nose
-            ctx.fillStyle = skinDark;
-            ctx.beginPath();
-            ctx.ellipse(x + 18, floatY + 13, isFemale ? 2 : 3, 2, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Smile! 😊
-            ctx.strokeStyle = '#C0392B';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(x + 18, floatY + 14, 6, 0.2, Math.PI - 0.2);
-            ctx.stroke();
-            ctx.lineWidth = 1;
-            
-            // Mustache (only for male characters with mustache)
-            if (char.hasMustache) {
-                const mustacheGrad = ctx.createLinearGradient(x + 9, floatY + 15, x + 27, floatY + 20);
-                mustacheGrad.addColorStop(0, hairColor);
-                mustacheGrad.addColorStop(0.5, shadeColor(hairColor, -15));
-                mustacheGrad.addColorStop(1, shadeColor(hairColor, -30));
-                ctx.fillStyle = mustacheGrad;
-                ctx.beginPath();
-                ctx.moveTo(x + 18, floatY + 16);
-                ctx.quadraticCurveTo(x + 8, floatY + 17, x + 6, floatY + 21);
-                ctx.quadraticCurveTo(x + 10, floatY + 19, x + 18, floatY + 18);
-                ctx.quadraticCurveTo(x + 26, floatY + 19, x + 30, floatY + 21);
-                ctx.quadraticCurveTo(x + 28, floatY + 17, x + 18, floatY + 16);
-                ctx.fill();
-            }
-            
-            // Lipstick for female
-            if (isFemale) {
-                ctx.fillStyle = '#E74C3C';
-                ctx.beginPath();
-                ctx.ellipse(x + 18, floatY + 18, 4, 2, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
+            // Head
+            ctx.fillRect(x + 8, floatY, 20, 16);
             
             // Legs
-            const legGrad = ctx.createLinearGradient(x + 7, floatY + 42, x + 16, floatY + 48);
-            legGrad.addColorStop(0, char.pantsColor);
-            legGrad.addColorStop(1, shadeColor(char.pantsColor, -30));
-            ctx.fillStyle = legGrad;
+            ctx.fillRect(x + 8, floatY + 42, 8, 12);
+            ctx.fillRect(x + 20, floatY + 42, 8, 12);
             
-            if (isFemale) {
-                // Leggings/tights
-                ctx.fillStyle = skinTone;
+            // === CIRCUIT LINES ===
+            ctx.shadowColor = circuitColor;
+            ctx.shadowBlur = 8 * pulse;
+            ctx.strokeStyle = circuitColor;
+            ctx.fillStyle = circuitColor;
+            ctx.lineWidth = 2;
+            
+            // Helmet/visor based on style
+            if (char.helmetStyle === 'full' || char.helmetStyle === 'visor') {
+                ctx.fillRect(x + 10, floatY + 6, 16, 3);
+                ctx.fillRect(x + 16, floatY + 6, 4, 8);
+            } else if (char.helmetStyle === 'sleek' || char.helmetStyle === 'elegant' || char.helmetStyle === 'feminine') {
+                ctx.beginPath();
+                ctx.moveTo(x + 10, floatY + 8);
+                ctx.lineTo(x + 26, floatY + 8);
+                ctx.stroke();
+                ctx.fillRect(x + 12, floatY + 6, 3, 3);
+                ctx.fillRect(x + 21, floatY + 6, 3, 3);
+            } else if (char.helmetStyle === 'stylish') {
+                ctx.fillRect(x + 8, floatY + 4, 20, 2);
+                ctx.fillRect(x + 10, floatY + 8, 16, 2);
+            } else {
+                ctx.fillRect(x + 10, floatY + 5, 16, 2);
             }
-            ctx.beginPath();
-            ctx.roundRect(x + 7, floatY + 44, 10, 8, 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.roundRect(x + 19, floatY + 44, 10, 8, 2);
-            ctx.fill();
             
-            // Shoes
-            const shoeColor = isFemale ? char.color : '#8B4513';
-            const shoeGrad = ctx.createRadialGradient(x + 10, floatY + 50, 0, x + 12, floatY + 52, 10);
-            shoeGrad.addColorStop(0, shadeColor(shoeColor, 20));
-            shoeGrad.addColorStop(0.6, shoeColor);
-            shoeGrad.addColorStop(1, shadeColor(shoeColor, -30));
-            ctx.fillStyle = shoeGrad;
-            ctx.beginPath();
-            ctx.ellipse(x + 11, floatY + 52, 8, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.beginPath();
-            ctx.ellipse(x + 25, floatY + 52, 8, 5, 0, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Shoe shine
-            ctx.fillStyle = 'rgba(255,255,255,0.3)';
-            ctx.beginPath();
-            ctx.ellipse(x + 9, floatY + 50, 3, 2, -0.3, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // High heels for female
-            if (isFemale) {
-                ctx.fillStyle = shadeColor(shoeColor, -30);
-                ctx.fillRect(x + 8, floatY + 52, 3, 5);
-                ctx.fillRect(x + 22, floatY + 52, 3, 5);
+            // Torso circuit pattern
+            if (char.circuitPattern === 'angular' || char.circuitPattern === 'aggressive') {
+                ctx.beginPath();
+                ctx.moveTo(x + 18, floatY + 16);
+                ctx.lineTo(x + 18, floatY + 24);
+                ctx.lineTo(x + 10, floatY + 30);
+                ctx.lineTo(x + 10, floatY + 38);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 18, floatY + 24);
+                ctx.lineTo(x + 26, floatY + 30);
+                ctx.lineTo(x + 26, floatY + 38);
+                ctx.stroke();
+            } else if (char.circuitPattern === 'flowing' || char.circuitPattern === 'organic') {
+                ctx.beginPath();
+                ctx.moveTo(x + 18, floatY + 16);
+                ctx.lineTo(x + 18, floatY + 38);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 10, floatY + 22);
+                ctx.lineTo(x + 26, floatY + 22);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 10, floatY + 32);
+                ctx.lineTo(x + 26, floatY + 32);
+                ctx.stroke();
+            } else if (char.circuitPattern === 'symmetric' || char.circuitPattern === 'elegant') {
+                ctx.beginPath();
+                ctx.moveTo(x + 8, floatY + 18);
+                ctx.lineTo(x + 18, floatY + 30);
+                ctx.lineTo(x + 28, floatY + 18);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(x + 18, floatY + 30);
+                ctx.lineTo(x + 18, floatY + 40);
+                ctx.stroke();
+            } else if (char.circuitPattern === 'flashy') {
+                ctx.fillRect(x + 8, floatY + 18, 20, 2);
+                ctx.fillRect(x + 8, floatY + 26, 20, 2);
+                ctx.fillRect(x + 8, floatY + 34, 20, 2);
+                ctx.fillRect(x + 16, floatY + 16, 4, 24);
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(x + 18, floatY + 16);
+                ctx.lineTo(x + 18, floatY + 40);
+                ctx.stroke();
+                ctx.fillRect(x + 8, floatY + 26, 20, 2);
             }
+            
+            // Shoulder accents
+            ctx.fillRect(x + 4, floatY + 16, 4, 2);
+            ctx.fillRect(x + 28, floatY + 16, 4, 2);
+            
+            // Arm circuits
+            ctx.fillRect(x + 4, floatY + 20, 2, 16);
+            ctx.fillRect(x + 30, floatY + 20, 2, 16);
+            
+            // Leg circuits
+            ctx.fillRect(x + 10, floatY + 44, 2, 8);
+            ctx.fillRect(x + 24, floatY + 44, 2, 8);
+            
+            // Boot tops
+            ctx.fillRect(x + 8, floatY + 50, 8, 2);
+            ctx.fillRect(x + 20, floatY + 50, 8, 2);
+            
+            // Identity disc (secondary color)
+            ctx.strokeStyle = secondaryColor;
+            ctx.shadowColor = secondaryColor;
+            ctx.beginPath();
+            ctx.arc(x + 30, floatY + 26, 5, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            ctx.shadowBlur = 0;
         }
         
-        // Draw player at specific position (for title screen preview - enhanced)
+        // Draw player at specific position (for title screen preview)
         function drawPlayerAt(x, y, facingRight) {
-            // Use the first character (Mario style) for title preview
             drawCharacterPreview(x, y, characters[0]);
         }
 
-        // Draw level progress bar
+        // Draw level progress bar - TRON style
         function drawProgressBar() {
             const progress = player.x / WORLD_WIDTH;
             const barWidth = 200;
-            const barHeight = 8;
+            const barHeight = 6;
             const barX = canvas.width - barWidth - 20;
             const barY = 20;
             
             // Background
-            ctx.fillStyle = 'rgba(0,0,0,0.5)';
-            ctx.roundRect(barX - 5, barY - 5, barWidth + 10, barHeight + 10, 5);
-            ctx.fill();
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(barX - 3, barY - 3, barWidth + 6, barHeight + 6);
+            
+            // Border
+            ctx.strokeStyle = 'rgba(0, 255, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(barX - 3, barY - 3, barWidth + 6, barHeight + 6);
             
             // Progress track
-            ctx.fillStyle = '#444';
+            ctx.fillStyle = '#111';
             ctx.fillRect(barX, barY, barWidth, barHeight);
             
-            // Progress fill
-            const gradient = ctx.createLinearGradient(barX, 0, barX + barWidth, 0);
-            gradient.addColorStop(0, '#00FF7F');
-            gradient.addColorStop(1, '#FFD700');
-            ctx.fillStyle = gradient;
+            // Progress fill with glow
+            ctx.shadowColor = COLORS.neonCyan;
+            ctx.shadowBlur = 10;
+            ctx.fillStyle = COLORS.neonCyan;
             ctx.fillRect(barX, barY, barWidth * progress, barHeight);
+            ctx.shadowBlur = 0;
             
-            // Flag icon at end
-            ctx.fillStyle = '#00FF7F';
-            ctx.font = '14px Arial';
-            ctx.fillText('🚩', barX + barWidth + 5, barY + 10);
+            // Exit portal indicator
+            ctx.fillStyle = COLORS.neonCyan;
+            ctx.font = '10px "Courier New", monospace';
+            ctx.fillText('EXIT', barX + barWidth + 8, barY + 6);
+            
+            // Sector markers
+            ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+            for (let i = 1; i < 4; i++) {
+                ctx.fillRect(barX + (barWidth / 4) * i, barY, 1, barHeight);
+            }
         }
 
         // Game loop
@@ -2321,10 +1999,10 @@ st.components.v1.html(game_html, height=560, scrolling=False)
 # Controls section
 st.markdown("""
 <div class="controls-box">
-    <strong>🎮 Controls:</strong><br>
-    <kbd>← →</kbd> or <kbd>A D</kbd> Move &nbsp;|&nbsp; 
-    <kbd>Space</kbd> or <kbd>↑</kbd> Jump &nbsp;|&nbsp;
-    <kbd>R</kbd> Restart
+    <strong>⚡ CONTROLS:</strong><br>
+    <kbd>← →</kbd> or <kbd>A D</kbd> MOVE &nbsp;|&nbsp; 
+    <kbd>SPACE</kbd> or <kbd>↑</kbd> JUMP &nbsp;|&nbsp;
+    <kbd>R</kbd> REBOOT
 </div>
 """, unsafe_allow_html=True)
 
@@ -2332,10 +2010,10 @@ st.markdown("""
 st.markdown("---")
 col1, col2, col3 = st.columns(3)
 with col1:
-    st.markdown("🪙 **Collect** all the coins!")
+    st.markdown("⚡ **Collect** energy bits!")
 with col2:
-    st.markdown("👾 **Avoid** the purple enemies!")
+    st.markdown("🔴 **Avoid** corrupted programs!")
 with col3:
-    st.markdown("🚩 **Reach** the flag to win!")
+    st.markdown("🚪 **Reach** the exit portal!")
 
 
