@@ -1344,7 +1344,7 @@ game_html = """
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
             // Grid floor
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.1)';
+            ctx.strokeStyle = 'rgba(255, 0, 68, 0.1)';
             ctx.lineWidth = 1;
             for (let y = 350; y < canvas.height; y += 15) {
                 ctx.beginPath();
@@ -1360,7 +1360,7 @@ game_html = """
             }
             
             // Animated data streams
-            ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+            ctx.strokeStyle = 'rgba(255, 0, 68, 0.3)';
             ctx.lineWidth = 2;
             for (let i = 0; i < 8; i++) {
                 const streamX = (i * 120 + time * 50) % (canvas.width + 100) - 50;
@@ -1371,19 +1371,12 @@ game_html = """
                 ctx.stroke();
             }
             
-            // Title with neon glow
-            ctx.shadowColor = COLORS.neonCyan;
-            ctx.shadowBlur = 40;
-            ctx.fillStyle = COLORS.neonCyan;
-            ctx.font = 'bold 42px "Courier New", monospace';
+            // Title with neon glow - RED only
+            ctx.shadowColor = '#FF0044';
+            ctx.shadowBlur = 30;
+            ctx.fillStyle = '#FF0044';
+            ctx.font = 'bold 44px "Courier New", monospace';
             ctx.textAlign = 'center';
-            ctx.fillText('SUPER PRADY BROS', canvas.width / 2, 100);
-            
-            // Secondary glow layer
-            ctx.shadowColor = '#FFFFFF';
-            ctx.shadowBlur = 20;
-            ctx.fillStyle = '#FFFFFF';
-            ctx.font = 'bold 40px "Courier New", monospace';
             ctx.fillText('SUPER PRADY BROS', canvas.width / 2, 100);
             ctx.shadowBlur = 0;
             
@@ -1407,28 +1400,28 @@ game_html = """
             ctx.fillRect(boxX, boxY, 300, 45);
             
             // Glowing border
-            ctx.shadowColor = nameInputActive ? COLORS.neonOrange : COLORS.neonCyan;
+            ctx.shadowColor = nameInputActive ? COLORS.neonOrange : '#FF0044';
             ctx.shadowBlur = nameInputActive ? 15 : 8;
-            ctx.strokeStyle = nameInputActive ? COLORS.neonOrange : COLORS.neonCyan;
+            ctx.strokeStyle = nameInputActive ? COLORS.neonOrange : '#FF0044';
             ctx.lineWidth = 2;
             ctx.strokeRect(boxX, boxY, 300, 45);
             ctx.shadowBlur = 0;
             
             // Label
-            ctx.fillStyle = COLORS.neonCyan;
+            ctx.fillStyle = '#FF0044';
             ctx.font = '14px "Courier New", monospace';
             ctx.fillText('ENTER PROGRAM ID:', canvas.width / 2, boxY - 10);
             
             // Name text or placeholder
             ctx.font = 'bold 20px "Courier New", monospace';
             if (playerName) {
-                ctx.shadowColor = COLORS.neonCyan;
+                ctx.shadowColor = '#FF0044';
                 ctx.shadowBlur = 10;
-                ctx.fillStyle = COLORS.neonCyan;
+                ctx.fillStyle = '#FF0044';
                 ctx.fillText(playerName.toUpperCase(), canvas.width / 2, boxY + 28);
                 ctx.shadowBlur = 0;
             } else {
-                ctx.fillStyle = 'rgba(0, 255, 255, 0.3)';
+                ctx.fillStyle = 'rgba(255, 0, 68, 0.3)';
                 ctx.fillText('_', canvas.width / 2, boxY + 28);
             }
             
@@ -1449,22 +1442,22 @@ game_html = """
             ctx.fillRect(canvas.width / 2 - 130, btnY, 260, 45);
             
             if (canStart) {
-                ctx.shadowColor = COLORS.neonCyan;
+                ctx.shadowColor = '#FF0044';
                 ctx.shadowBlur = 15 * pulse;
-                ctx.strokeStyle = COLORS.neonCyan;
+                ctx.strokeStyle = '#FF0044';
             } else {
-                ctx.strokeStyle = 'rgba(0, 255, 255, 0.3)';
+                ctx.strokeStyle = 'rgba(255, 0, 68, 0.3)';
             }
             ctx.lineWidth = 2;
             ctx.strokeRect(canvas.width / 2 - 130, btnY, 260, 45);
             ctx.shadowBlur = 0;
             
-            ctx.fillStyle = canStart ? COLORS.neonCyan : 'rgba(0, 255, 255, 0.4)';
+            ctx.fillStyle = canStart ? '#FF0044' : 'rgba(255, 0, 68, 0.4)';
             ctx.font = 'bold 18px "Courier New", monospace';
             ctx.fillText(btnText, canvas.width / 2, btnY + 28);
             
             // Instructions
-            ctx.fillStyle = 'rgba(0, 255, 255, 0.5)';
+            ctx.fillStyle = 'rgba(255, 0, 68, 0.5)';
             ctx.font = '12px "Courier New", monospace';
             ctx.fillText('PRESS ENTER TO CONTINUE', canvas.width / 2, 470);
             
